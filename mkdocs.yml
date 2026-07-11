@@ -1,0 +1,140 @@
+site_name: Zevra Documentation
+site_description: Official documentation for the Zevra AI Platform
+site_author: Zevra
+site_url: https://docs.zevra.ai
+
+repo_name: zevra-docs
+repo_url: https://github.com/ZevraAI/zevra-docs
+edit_uri: edit/main/docs/
+
+docs_dir: docs
+
+theme:
+  name: material
+  custom_dir: overrides
+
+  logo: assets/images/logo.png
+  favicon: assets/images/favicon.png
+
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: blue
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: blue
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+
+  features:
+    # Navigation
+    - navigation.tabs
+    - navigation.sections
+    - navigation.indexes
+    - navigation.top
+    - navigation.instant
+    - navigation.expand
+
+    # Table of Contents
+    - toc.follow
+
+    # Search
+    - search.suggest
+    - search.highlight
+
+    # Content
+    - content.code.copy
+    - content.tabs.link
+    - content.tooltips
+
+plugins:
+  - search
+
+  - mermaid2
+
+  - git-revision-date-localized:
+      enable_creation_date: true
+      type: date
+
+  - minify:
+      minify_html: true
+
+markdown_extensions:
+  - admonition
+
+  - attr_list
+
+  - md_in_html
+
+  - tables
+
+  - toc:
+      permalink: true
+
+  - pymdownx.details
+
+  - pymdownx.superfences
+
+  - pymdownx.highlight:
+      anchor_linenums: true
+
+  - pymdownx.inlinehilite
+
+  - pymdownx.tabbed:
+      alternate_style: true
+
+  - pymdownx.tasklist:
+      custom_checkbox: true
+
+  - pymdownx.emoji
+
+  - pymdownx.keys
+
+  - pymdownx.mark
+
+  - pymdownx.critic
+
+extra_css:
+  - assets/stylesheets/extra.css
+
+extra_javascript:
+  - assets/javascripts/extra.js
+
+extra:
+  version:
+    provider: mike
+
+copyright: Copyright © 2026 Zevra. All rights reserved.
+
+# Navigation will be defined explicitly once the first
+# documentation sections are added.
+#
+# nav:
+#   - Home: index.md
+#   - Getting Started:
+#       - getting-started/index.md
+#   - Platform:
+#       - platform/index.md
+#   - Capabilities:
+#       - capabilities/index.md
+#   - AI Platform:
+#       - ai/index.md
+#   - Runtime:
+#       - runtime/index.md
+#   - Architecture:
+#       - architecture/index.md
+#   - ADR:
+#       - adr/index.md
+#   - API:
+#       - api/index.md
+#   - Operations:
+#       - operations/index.md
+#   - Roadmap:
+#       - roadmap/index.md
