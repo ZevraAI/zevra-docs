@@ -1,0 +1,53 @@
+# Publish the site to GitHub Pages on every merge to main.
+#
+# Deployment uses mike (the version manager mkdocs.yml is configured for):
+# main always publishes as the "latest" version. When release versioning
+# begins, cut a versioned deploy alongside it:
+#
+#   mike deploy --push --update-aliases 1.0 latest
+#
+# and "latest" becomes an alias that follows the newest release.
+#
+# One-time repository setup:
+#   Settings → Pages → Source: "Deploy from a branch" → gh-pages / (root).
+#   For the docs.zevra.ai custom domain, set it in the same screen after
+#   the first deploy (GitHub commits a CNAME file to gh-pages).
+name: deploy
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: docs-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy to GitHub Pages
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Configure git for gh-pages commits
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Deploy latest
+        run: |
+          mike deploy --push latest
+          mike set-default --push latest

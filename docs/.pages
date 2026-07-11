@@ -1,0 +1,14 @@
+# Top-level navigation order. Section titles and in-section ordering are
+# owned by each section's own .pages file.
+nav:
+  - index.md
+  - getting-started
+  - platform
+  - capabilities
+  - ai
+  - runtime
+  - architecture
+  - adr
+  - api
+  - operations
+  - roadmap

@@ -1,0 +1,40 @@
+# Quality gate: every pull request must build cleanly in strict mode.
+# Strict mode + the `validation` block in mkdocs.yml turns broken links,
+# orphaned pages, and bad nav entries into build failures.
+name: ci
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build (strict)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Full history: git-revision-date-localized derives page dates
+          # from git log and falls back to build date on shallow clones,
+          # which would silently wrong-date every page.
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Build documentation (strict)
+        run: mkdocs build --strict

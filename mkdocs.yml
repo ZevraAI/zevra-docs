@@ -9,12 +9,19 @@ edit_uri: edit/main/docs/
 
 docs_dir: docs
 
+# Fail loudly on broken structure. Combined with `mkdocs build --strict`
+# in CI, these turn every broken link or orphaned page into a build failure.
+validation:
+  omitted_files: warn
+  absolute_links: warn
+  unrecognized_links: warn
+
 theme:
   name: material
   custom_dir: overrides
 
-  logo: assets/images/logo.png
-  favicon: assets/images/favicon.png
+  logo: assets/images/logo.svg
+  favicon: assets/images/favicon.svg
 
   palette:
     - media: "(prefers-color-scheme: light)"
@@ -57,11 +64,16 @@ theme:
 plugins:
   - search
 
+  # Navigation is assembled from per-directory .pages files —
+  # see "Navigation" in STYLE_GUIDE.md.
+  - awesome-pages
+
   - mermaid2
 
   - git-revision-date-localized:
       enable_creation_date: true
       type: date
+      fallback_to_build_date: true
 
   - minify:
       minify_html: true
@@ -80,7 +92,11 @@ markdown_extensions:
 
   - pymdownx.details
 
-  - pymdownx.superfences
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:mermaid2.fence_mermaid_custom
 
   - pymdownx.highlight:
       anchor_linenums: true
@@ -93,7 +109,9 @@ markdown_extensions:
   - pymdownx.tasklist:
       custom_checkbox: true
 
-  - pymdownx.emoji
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
 
   - pymdownx.keys
 
@@ -113,28 +131,14 @@ extra:
 
 copyright: Copyright © 2026 Zevra. All rights reserved.
 
-# Navigation will be defined explicitly once the first
-# documentation sections are added.
+# Navigation is deliberately NOT defined here.
 #
-# nav:
-#   - Home: index.md
-#   - Getting Started:
-#       - getting-started/index.md
-#   - Platform:
-#       - platform/index.md
-#   - Capabilities:
-#       - capabilities/index.md
-#   - AI Platform:
-#       - ai/index.md
-#   - Runtime:
-#       - runtime/index.md
-#   - Architecture:
-#       - architecture/index.md
-#   - ADR:
-#       - adr/index.md
-#   - API:
-#       - api/index.md
-#   - Operations:
-#       - operations/index.md
-#   - Roadmap:
-#       - roadmap/index.md
+# A single central nav does not scale: every new page would require an edit
+# to this file, and section owners could not manage their own ordering.
+# Instead, the awesome-pages plugin assembles navigation from per-directory
+# `.pages` files:
+#
+#   docs/.pages            — top-level section order
+#   docs/<section>/.pages  — section title and page order within the section
+#
+# See "Navigation" in STYLE_GUIDE.md for the rules.
