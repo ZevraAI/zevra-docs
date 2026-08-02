@@ -1,0 +1,20 @@
+title: Architecture Review
+nav:
+  - index.md
+  - 01-product-vision.md
+  - 02-system-architecture.md
+  - 03-user-journey.md
+  - 04-authentication-layer.md
+  - 05-frontend-architecture.md
+  - 06-design-system.md
+  - 07-executive-experience.md
+  - 08-backend-architecture.md
+  - 09-agent-architecture.md
+  - 10-request-lifecycle.md
+  - 11-metadata-architecture.md
+  - 12-execution-architecture.md
+  - 13-response-composition.md
+  - 14-administration.md
+  - 15-database-architecture.md
+  - 16-security-architecture.md
+  - 17-future-roadmap.md

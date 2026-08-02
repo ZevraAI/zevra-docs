@@ -2,6 +2,8 @@
 # owned by each section's own .pages file.
 nav:
   - index.md
+  - architecture-review
+  - overview
   - getting-started
   - platform
   - capabilities
