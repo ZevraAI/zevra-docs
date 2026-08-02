@@ -10,20 +10,46 @@ Meta-document for the Zevra Documentation Verification Project. Not published (r
 
 | Section | Status | Audit report |
 |---|---|---|
-| Getting Started | ✅ Audited — awaiting approval | below |
-| Platform | Pending | — |
-| Capabilities | Pending | — |
-| AI Platform | Pending | — |
-| Runtime | Pending | — |
-| Architecture | Pending | — |
-| ADRs | Pending | — |
-| API | Pending | — |
-| Operations | Pending | — |
+| Getting Started | ✅ Audited — awaiting approval | conversation, 2026-08-01 |
+| Platform | ✅ Audited — awaiting approval | conversation, 2026-08-01 |
+| Capabilities | ✅ Audited — awaiting approval (7/7: Executive Brief ✅; Autonomous Agents ⚠; Conversational Analytics ⚠; Scheduled Reports ✅; Alerts ❌ 1 error; AI Memory ⚠ 1 overstated claim; Workflow Automation ❌ 1 real code bug found) | — |
+| AI Platform | ✅ Audited — awaiting approval (charter-only, no content pages, nothing to contradict) | — |
+| Runtime | ✅ Audited — awaiting approval (charter-only, no content pages, nothing to contradict) | — |
+| Architecture | ✅ Audited — awaiting approval (6/6: Semantic Foundation ❌ 2 errors + 1 more found via ADR cross-check; Execution Contract ✅; Business Value Architecture ✅; Master Plan + Phase 3 + Phase 4 plans ⚠ stale status headers, target-state content accurate) | — |
+| ADRs | ✅ Audited — awaiting approval (9/9, spot-checked; 2 real findings surfaced via cross-referencing: AI Memory async bug, graph table-stripping contradiction — both retroactively corrected into earlier audits) | — |
+| API | ✅ Audited — awaiting approval (charter-only, no content pages, nothing to contradict) | — |
+| Operations | ✅ Audited — awaiting approval (charter-only, no content pages, nothing to contradict) | — |
 
-## Open Items Awaiting User Decision
+## Open Items Awaiting User Decision (single-document gaps only)
 
-None yet.
+1. **Getting Started** — charter promises prerequisites/access/onboarding tutorials; none exist. Documentation Gap, not yet approved for drafting.
+2. **Platform** — charter promises tenancy/stewardship/trust-tier concept pages; none exist as dedicated Platform pages (related content currently lives in `docs/architecture/semantic-foundation.md` instead). Documentation Gap, not yet approved for drafting or moving.
+3. **Autonomous Agents — stale Configuration rows.** Schema-cap-8-tables, status-value sampling (≤15/10 named columns), and vocabulary scan (≤100 terms) rows in the Configuration table describe a pre-ExecutionContract mechanism with zero trace in current code. Not a cross-doc conflict (the same document's own "Business-object grounding" section already describes the current, correct mechanism) — awaiting approval to remove/mark-superseded in the update phase.
+4. **Autonomous Agents — Documentation Gap.** An "Execution Strategy Selector" (`strategySelector.analyze()`, `ChatService.java:245`) now gates the agent router and isn't mentioned in the doc's routing description. Not drafted.
+5. **Conversational Analytics — factual error.** "600-character history answer truncation" (Configuration section) — actual constant is 800 (`ChatService.java:782-783`), and scope is narrower than implied (only `answerFromPriorResults`). Awaiting approval to fix in update phase.
+6. **Conversational Analytics — Documentation Gap.** Same undocumented `ExecutionStrategySelector` step as Autonomous Agents (now seen in 2 of 3 capability docs reviewed), plus an undocumented "Execution Continuity" grounding step (`ChatService.java:269-273`), plus stage 4/5 (attachment load vs. conversation history) is actually reversed from the doc's stated order. Not drafted.
+7. **Alerts — factual error.** Doc claims manual baseline refresh (`POST /temporal/baselines/{key}/refresh`) never fires alert rules ("notifies no one"). Code contradicts this directly: `BaselineService.refreshBaseline()` (`:144-148`) calls `alertService.evaluateAndDeliver(...)` exactly like the scheduler, and the method's own Javadoc says it deliberately mirrors the scheduled path. Appears in the Lifecycle section (line 110) and as a Current Limitations bullet (line 204). Awaiting approval to correct.
+8. **AI Memory — overstated claim.** "Status (constrained to the five lifecycle values)" implies a DB constraint; `nexus_document.status` is actually an unconstrained `VARCHAR(40)` with a mismatched default (`'PROCESSING'`, not one of the 5 documented states). Enforcement is application-code convention only. Awaiting approval to reword.
+9. **Workflow Automation — real code defect (not a doc error).** `{{nodes.<id>...}}` variable resolution is non-functional: `WorkflowExecutionEngine.java:122` stores step output under a flat key `"nodes.<id>"`, but `VariableResolver` splits on `.` and looks up only the first segment (`"nodes"`), which was never set — every such reference resolves to `null`. The doc accurately describes the *intended* contract; the implementation doesn't deliver it. Recommend surfacing to engineering independent of this documentation project's own scope — not something a doc edit can fix.
+10. **Workflow Automation — minor overstatement.** "Doubly scoped... unlike other tables" (line 94) — the double-scoping mechanism (tenant_schema column + search_path switching) is real but not unique to this capability; the same pattern exists on `ZevraAgentRepository`, `UsageRepository`, `TenantDomainRepository`, `UserProfileRepository`, `TenantRepository`. Minor, low priority.
+11. **Semantic Foundation — factual error.** Positive-feedback (thumbs-up) confidence increment documented as "+0.05, cap 1.0"; actual code (`LearnedMappingRepository.java:82-90`, `reinforce()`) applies **+0.08**. The +0.05 constant that does exist (`:37`) belongs to a different signal (repeat query-success upserts), not thumbs-up. Real number mismatch, not wording.
+12. **Semantic Foundation — boundary discrepancy.** Purge threshold documented as confidence "<0.2" (strict); code purges at confidence "≤0.20" (inclusive) (`LearnedMappingRepository.java:51,183-187`). Minor.
+14. **AI Memory — real functional defect (found via ADR-0006 cross-check, not caught in the original audit).** `DocumentMemoryService.uploadDocument` calls `@Async indexDocument` via same-bean self-invocation (`DocumentMemoryService.java:125,138`) — Spring's async proxy cannot intercept this, so indexing runs synchronously in the upload HTTP request thread despite the `@Async` annotation and the doc's explicit "background"/"asynchronously" claims (`ai-memory.md` lines 22, 62). A large document holds the request open across sequential embedding calls. This corrects/supersedes the original AI Memory audit, which took the async claim at face value.
+15. **Semantic Foundation — additional error found via ADR-0008 cross-check.** The Knowledge Graph section's claim that "table-name references are deliberately stripped from graph context" is false — `KnowledgeGraphService.buildGraphContext` (`:105-128`) renders `[table: <name>]` and exact `JOIN:` guidance for every node/edge, consumed downstream by `ChatService.joinTableNames` (`:1191`). Logged as Cross-Document Issue 2. This is a third correction to the Semantic Foundation audit (alongside items 11-12 above), all found via different means — worth noting this document had more issues than its own dedicated audit pass caught.
+16. **ADR status headers stale.** ADR-0002 through ADR-0009 all read "Status: Proposed" — but ADR-0003's A1, A2, and A9-A16 have demonstrably shipped (confirmed via Autonomous Agents and Execution Contract audits). Other ADRs' story-set progress not individually re-checked. Awaiting reconciliation-phase review.
+13. **Unified Answer Engine Master Plan + Phase 3 + Phase 4 plans — stale status headers.** All three self-label "planning only"/"pre-implementation," but Phases 1-4 have fully shipped (verified: `GovernedSqlRuntime` shared by both cores, `AgentBrain`/`ExecutionContractBuilder`/`PromptContextBuilder`/`PromptAssembler` spine live in `ChatService.java:384-393`, old grounding methods `EnterpriseMapService.operationalContext`/`ChatService.assembleEntityContext`/`rankEntityBlockKeys` fully deleted from the codebase, `ExecutionOutcomeInterpreter`+`NaturalLanguageComposer` shipped and consumed by all 4 expected sites). Phase 5 (workflow/alert governance) genuinely still pending, consistent with Workflow Automation audit finding #2. `phase-3-grounding-convergence-plan.md`'s entire "Current Chat Grounding Pipeline" section describes a now-deleted pipeline as if current — the most stale section found in the project so far. Awaiting approval to update status headers.
+
+**Cross-document conflicts** (found between two or more docs, or between architecture-review docs and code) are tracked separately in `CROSS_DOCUMENT_ISSUES.md`, not here. Per project instructions: logged during verification, never resolved during verification — reconciliation is a dedicated phase after 100% coverage.
+
+## Provenance Note
+
+As of 2026-08-01, `docs/capabilities/*.md` (7 pages), `docs/architecture/*.md` (6 pages beyond the charter), `docs/adr/0002`–`0009`, and `docs/overview/` were uncommitted working-tree files, not part of the tracked zevra-docs project. User confirmed these are now committed (`a6f9071 "Architecture Document"`) and are in scope for this verification project like any other tracked doc.
 
 ## Session Log
 
-- 2026-08-01 — Tracker created. Getting Started audit produced (see below). No documents modified.
+- 2026-08-01 — Tracker created. Getting Started audit produced. No documents modified.
+- 2026-08-01 — Platform audit produced. No documents modified.
+- 2026-08-01 — Found large sets of doc files were uncommitted (capabilities, extra architecture pages, ADRs 0002-0009, overview). Flagged to user; user committed them. Resuming review order at Capabilities.
+- 2026-08-01 — User directed: continue through full review order without stopping for cross-document conflicts; log them in `CROSS_DOCUMENT_ISSUES.md` instead; reconciliation is a separate later phase. `CROSS_DOCUMENT_ISSUES.md` created.
+- 2026-08-01 — All 7 Capabilities pages audited (Executive Brief, Autonomous Agents, Conversational Analytics, Scheduled Reports, Alerts, AI Memory, Workflow Automation). Tenancy question opened during Executive Brief audit fully resolved during Workflow Automation audit (see `CROSS_DOCUMENT_ISSUES.md` Issue 1 correction) — turned out to be a documentation-only inconsistency in my own cross-referencing, not an error in any capability doc. No documents modified. Proceeding to AI Platform.
+- 2026-08-01 — AI Platform and Runtime audited (charter-only, no findings). Architecture section audited (6 docs: Semantic Foundation, Execution Contract, Business Value Architecture, Master Plan, Phase 3 plan, Phase 4 plan) — found 2 factual errors in Semantic Foundation, confirmed Phases 1-4 of the migration plans have shipped despite stale "planning only" status headers. ADRs (9 docs) audited via spot-check given volume — surfaced 2 significant findings via cross-referencing that were missed in earlier per-document audits: a real async/self-invocation bug in AI Memory, and a factual error in Semantic Foundation's Knowledge Graph section (logged as Cross-Document Issue 2). API and Operations audited (charter-only, no findings). **All 9 sections in the review order are now audited. No documents modified anywhere in the project.** Awaiting user approval before any updates, and awaiting direction on the reconciliation phase for `CROSS_DOCUMENT_ISSUES.md`.
