@@ -1,0 +1,17 @@
+/* Zevra documentation — global style extensions.
+ *
+ * Keep this file small. Prefer Material configuration (mkdocs.yml) over CSS;
+ * add a rule here only when the theme cannot express it, and comment why. */
+
+:root {
+  /* Brand hook: adjust when official brand colors land, then align the
+   * `palette.primary`/`palette.accent` values in mkdocs.yml. */
+  --zevra-brand: #3f51b5;
+}
+
+/* Material renders plain Markdown tables at content width only when they fit;
+ * full-width reads better for the reference tables this site leans on. */
+.md-typeset table:not([class]) {
+  display: table;
+  width: 100%;
+}
