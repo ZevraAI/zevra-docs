@@ -1,0 +1,445 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Roadmap — Enterprise Business Reference Grounding</title>
+<style>
+  :root{
+    --ink-900:#14171a; --ink-700:#3a4045; --ink-muted:#5b625d;
+    --paper-0:#f4f5f3; --paper-1:#ffffff; --line:#d8dad6; --line-soft:#e6e7e4;
+    --semantic:#9c6a0f; --semantic-bg:#f6ecd8; --semantic-ink:#7a5309;
+    --deterministic:#1f6f74; --deterministic-bg:#dcecec; --deterministic-ink:#155559;
+    --frontend:#5c4d99; --frontend-bg:#e9e5f5; --frontend-ink:#453a75;
+    --neutral:#5b625d; --neutral-bg:#e6e7e4;
+    --danger:#9a3324; --danger-bg:#f6e3de;
+    --font-display:-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;
+    --font-body:-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;
+    --font-mono:ui-monospace,"SF Mono","Cascadia Code","Roboto Mono",Menlo,Consolas,monospace;
+    --measure:72ch;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --ink-900:#e9e8e3; --ink-700:#c7c9c4; --ink-muted:#9aa19c;
+      --paper-0:#14171a; --paper-1:#1a1e20; --line:#2c3234; --line-soft:#23282a;
+      --semantic:#d9a94b; --semantic-bg:#3a2f16; --semantic-ink:#e8c073;
+      --deterministic:#4fa8ac; --deterministic-bg:#123638; --deterministic-ink:#7cc9cc;
+      --frontend:#9c8ce0; --frontend-bg:#2a2440; --frontend-ink:#bcaef0;
+      --neutral:#9aa19c; --neutral-bg:#23282a;
+      --danger:#d9776a; --danger-bg:#3a201c;
+    }
+  }
+  :root[data-theme="dark"]{
+    --ink-900:#e9e8e3; --ink-700:#c7c9c4; --ink-muted:#9aa19c;
+    --paper-0:#14171a; --paper-1:#1a1e20; --line:#2c3234; --line-soft:#23282a;
+    --semantic:#d9a94b; --semantic-bg:#3a2f16; --semantic-ink:#e8c073;
+    --deterministic:#4fa8ac; --deterministic-bg:#123638; --deterministic-ink:#7cc9cc;
+    --frontend:#9c8ce0; --frontend-bg:#2a2440; --frontend-ink:#bcaef0;
+    --neutral:#9aa19c; --neutral-bg:#23282a;
+    --danger:#d9776a; --danger-bg:#3a201c;
+  }
+  :root[data-theme="light"]{
+    --ink-900:#14171a; --ink-700:#3a4045; --ink-muted:#5b625d;
+    --paper-0:#f4f5f3; --paper-1:#ffffff; --line:#d8dad6; --line-soft:#e6e7e4;
+    --semantic:#9c6a0f; --semantic-bg:#f6ecd8; --semantic-ink:#7a5309;
+    --deterministic:#1f6f74; --deterministic-bg:#dcecec; --deterministic-ink:#155559;
+    --frontend:#5c4d99; --frontend-bg:#e9e5f5; --frontend-ink:#453a75;
+    --neutral:#5b625d; --neutral-bg:#e6e7e4;
+    --danger:#9a3324; --danger-bg:#f6e3de;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;background:var(--paper-0);color:var(--ink-900);}
+  body{font-family:var(--font-body);font-size:16px;line-height:1.6;}
+  ::selection{background:var(--semantic-bg);color:var(--ink-900);}
+  a{color:var(--deterministic-ink);}
+  a:focus-visible, button:focus-visible, summary:focus-visible{outline:2px solid var(--deterministic);outline-offset:2px;}
+
+  .shell{display:grid;grid-template-columns:230px minmax(0,var(--measure));gap:56px;max-width:1200px;margin:0 auto;padding:48px 24px 120px;}
+  @media (max-width:920px){.shell{grid-template-columns:1fr;}.rail{display:none;}}
+
+  .rail{position:sticky;top:32px;align-self:start;font-size:12.5px;}
+  .rail .kicker{font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.08em;color:var(--ink-muted);font-size:10.5px;margin-bottom:14px;}
+  .rail ol{list-style:none;margin:0 0 26px;padding:0;display:flex;flex-direction:column;gap:2px;}
+  .rail li a{display:block;padding:5px 8px;border-radius:3px;color:var(--ink-700);text-decoration:none;border-left:2px solid transparent;}
+  .rail li a:hover{background:var(--paper-1);border-left-color:var(--line);}
+  .rail .legend{display:flex;flex-direction:column;gap:8px;padding-top:16px;border-top:1px solid var(--line);}
+  .swatch{display:flex;align-items:center;gap:8px;color:var(--ink-muted);}
+  .swatch i{width:11px;height:11px;border-radius:2px;flex:none;}
+  .swatch.sem i{background:var(--semantic);} .swatch.det i{background:var(--deterministic);}
+  .swatch.fe i{background:var(--frontend);} .swatch.nt i{background:var(--neutral);}
+
+  header.doc-head{margin-bottom:44px;}
+  .doc-eyebrow{font-family:var(--font-mono);font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-muted);display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px;}
+  .status-pill{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.04em;padding:2px 8px;border-radius:20px;border:1px solid var(--deterministic);color:var(--deterministic-ink);background:var(--deterministic-bg);}
+  h1{font-family:var(--font-display);font-size:2rem;font-weight:700;letter-spacing:-.015em;line-height:1.15;margin:0 0 12px;text-wrap:balance;}
+  .doc-sub{color:var(--ink-muted);font-size:1.02rem;max-width:62ch;text-wrap:balance;}
+
+  section{margin-top:64px;padding-top:8px;scroll-margin-top:24px;}
+  section > .num{font-family:var(--font-mono);color:var(--ink-muted);font-size:12.5px;}
+  h2{font-family:var(--font-display);font-size:1.34rem;font-weight:700;letter-spacing:-.01em;margin:2px 0 6px;text-wrap:balance;}
+  h3{font-family:var(--font-display);font-size:1rem;font-weight:700;margin:26px 0 8px;}
+  p{margin:0 0 14px;color:var(--ink-700);}
+  strong{color:var(--ink-900);}
+  .lede{color:var(--ink-muted);font-size:.97rem;margin-bottom:20px;}
+  code{font-family:var(--font-mono);font-size:.86em;background:var(--paper-1);border:1px solid var(--line-soft);padding:.1em .38em;border-radius:4px;color:var(--ink-900);}
+  ul,ol{padding-left:1.25em;color:var(--ink-700);}
+  li{margin-bottom:5px;}
+
+  .tag{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.03em;padding:1px 7px;border-radius:20px;white-space:nowrap;display:inline-block;}
+  .tag.sem{background:var(--semantic-bg);color:var(--semantic-ink);border:1px solid var(--semantic);}
+  .tag.det{background:var(--deterministic-bg);color:var(--deterministic-ink);border:1px solid var(--deterministic);}
+  .tag.fe{background:var(--frontend-bg);color:var(--frontend-ink);border:1px solid var(--frontend);}
+  .tag.nt{background:var(--neutral-bg);color:var(--ink-muted);border:1px solid var(--line);}
+
+  .diagram{background:var(--paper-1);border:1px solid var(--line);border-radius:8px;padding:20px 22px;margin:18px 0;overflow-x:auto;font-family:var(--font-mono);font-size:.83rem;color:var(--ink-700);white-space:pre;line-height:1.7;}
+  .diagram .cap{font-family:var(--font-mono);font-size:11px;color:var(--ink-muted);margin-top:12px;padding-top:10px;border-top:1px dashed var(--line-soft);white-space:normal;}
+
+  .table-wrap{overflow-x:auto;margin:16px 0 22px;border:1px solid var(--line);border-radius:8px;}
+  table{border-collapse:collapse;width:100%;font-size:.86rem;min-width:560px;}
+  th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line-soft);vertical-align:top;}
+  thead th{background:var(--paper-1);font-family:var(--font-mono);font-size:.71rem;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-muted);border-bottom:1px solid var(--line);}
+  tbody tr:last-child td{border-bottom:none;}
+
+  /* ── Story cards ────────────────────────────────────────────────── */
+  .story{background:var(--paper-1);border:1px solid var(--line);border-radius:10px;margin:20px 0;overflow:hidden;}
+  .story-head{padding:16px 20px;border-bottom:1px solid var(--line-soft);display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap;}
+  .story-head h3{margin:0;font-size:1.05rem;}
+  .story-id{font-family:var(--font-mono);color:var(--ink-muted);font-size:.78rem;display:block;margin-bottom:2px;}
+  .story-body{padding:4px 20px 18px;}
+  .field{margin-top:16px;}
+  .field-label{font-family:var(--font-mono);font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-muted);margin-bottom:5px;}
+  .field p, .field ul{margin:0;font-size:.9rem;}
+  .field ul{padding-left:1.15em;}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 24px;}
+  @media (max-width:640px){.grid2{grid-template-columns:1fr;}}
+
+  .badge-row{display:flex;gap:6px;flex-wrap:wrap;}
+
+  footer{margin-top:80px;padding-top:22px;border-top:1px solid var(--line);color:var(--ink-muted);font-size:.83rem;}
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <nav class="rail">
+    <div class="kicker">Contents</div>
+    <ol>
+      <li><a href="#gate">0 · Readiness gate</a></li>
+      <li><a href="#phases">1 · Phases</a></li>
+      <li><a href="#stories">2 · Stories</a></li>
+      <li><a href="#deps">3 · Dependencies</a></li>
+      <li><a href="#risk">4 · Risk</a></li>
+      <li><a href="#testing">5 · Testing</a></li>
+      <li><a href="#migration">6 · Migration</a></li>
+      <li><a href="#transparency">7 · Transparency</a></li>
+      <li><a href="#validation">8 · Validation</a></li>
+    </ol>
+    <div class="legend">
+      <div class="swatch sem"><i></i>Owner: Agent Brain</div>
+      <div class="swatch det"><i></i>Owner: Runtime</div>
+      <div class="swatch fe"><i></i>Owner: Frontend</div>
+      <div class="swatch nt"><i></i>Metadata / validation-only</div>
+    </div>
+  </nav>
+
+  <main>
+    <header class="doc-head">
+      <div class="doc-eyebrow"><span class="status-pill">Reviewed</span> Implementation Roadmap · Architecture frozen · No code in this document</div>
+      <h1>Enterprise Business Reference Grounding</h1>
+      <p class="doc-sub">Decomposition of the approved architecture into independently shippable, independently testable stories. Every constraint below is treated as fixed — this document allocates work against it, it does not revisit it.</p>
+    </header>
+
+    <section id="gate">
+      <div class="num">§0</div>
+      <h2>Architecture readiness gate</h2>
+      <p class="lede">Not a story. No owner, no Definition of Done, no regression tests — a checklist that must be true before Story 1 is scheduled, so implementation never begins against an architecture that isn't actually settled yet.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Prerequisite</th><th>Status required before Story 1</th></tr></thead>
+          <tbody>
+            <tr><td>ADR — Enterprise Business Reference Resolution</td><td>Approved</td></tr>
+            <tr><td>Capability specification</td><td>Approved</td></tr>
+            <tr><td>Grounding contract (Agent Brain ↔ Business Reference Grounding)</td><td>Approved</td></tr>
+            <tr><td>Ownership matrix</td><td>Approved</td></tr>
+            <tr><td>Transparency contract (Business Understanding rendering)</td><td>Approved</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>If any row is not yet approved, no story below should start — including Story 1, which is metadata-only and might otherwise seem safe to begin early. Metadata curated against an unsettled contract is rework, not progress.</p>
+    </section>
+
+    <section id="phases">
+      <div class="num">§1</div>
+      <h2>Capability breakdown</h2>
+      <p class="lede">Six phases. Each has exactly one architectural purpose and one owner.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Phase</th><th>Purpose</th><th>Owner</th></tr></thead>
+          <tbody>
+            <tr><td>1 · Metadata Foundation</td><td>Give entities a type, a canonical source, and an identity/display attribute pair — the vocabulary everything else consumes.</td><td><span class="tag nt">Metadata</span></td></tr>
+            <tr><td>2 · Deterministic Candidate Retrieval</td><td>One fixed, parameterized retrieval shape, executed — never authored — through the existing governed execution path.</td><td><span class="tag det">Runtime — execution only</span></td></tr>
+            <tr><td>3 · Agent Brain Grounding Step</td><td>The judgment: resolved, clarification required, or no match.</td><td><span class="tag sem">Agent Brain</span></td></tr>
+            <tr><td>4 · Clarification Wiring</td><td>Route a Case B outcome through the existing clarification rendering.</td><td><span class="tag det">ChatService</span></td></tr>
+            <tr><td>5 · Transparency</td><td>Render the outcome in the existing Business Understanding section.</td><td><span class="tag fe">Frontend</span></td></tr>
+            <tr><td>6 · Continuity Validation</td><td>Prove the already-shipped evidence-carry-forward mechanism needs no changes.</td><td><span class="tag nt">Validation</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="stories">
+      <div class="num">§2</div>
+      <h2>Implementation stories</h2>
+
+      <!-- STORY 1 -->
+      <div class="story">
+        <div class="story-head">
+          <div><span class="story-id">Story 1</span><h3>Restore Canonical Entity Metadata</h3></div>
+          <div class="badge-row"><span class="tag nt">Owner: Metadata</span></div>
+        </div>
+        <div class="story-body">
+          <div class="field"><div class="field-label">Objective</div><p>Give each canonical business entity a designated type, canonical source, identity attribute, and display attribute, using only fields that already exist today or existed prior to a later schema rebuild — curated the same way and at the same stage every other piece of semantic metadata already is.</p></div>
+          <div class="field"><div class="field-label">Business value</div><p>Unlocks every later story. Without it, retrieval and Agent Brain have nothing concrete to act on — and because it's generic across entity types from the start, no per-type work is needed later.</p></div>
+          <div class="card" style="margin:16px 0 4px;border-left:3px solid var(--neutral)">
+            <div style="font-family:var(--font-mono);font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-muted);margin-bottom:6px">Metadata governance — added on review</div>
+            <p style="margin:0;font-size:.87rem">Entity Type, Canonical Source, Identity Attribute, and Display Attribute are <strong>curated metadata, not discovered metadata</strong> — the same category of work as the synonyms, descriptions, and object/attribute designations already curated today during onboarding, and owned by the same process. This story explicitly extends the existing onboarding curation responsibility to cover four more fields on an entity already being onboarded; it does not create a second curation process, a separate metadata workflow, or any automatic inference. No runtime component discovers, guesses, or infers these designations — a business object simply does not participate in grounding until a curator has set them, exactly as an object today does not participate in Business Language Resolution until it is curated into the domain.</p>
+          </div>
+          <div class="grid2">
+            <div class="field"><div class="field-label">Scope</div><ul><li>Restore <code>entity_type</code> on <code>BusinessEntity</code></li><li>Designate one existing <code>IDENTIFIER</code>-role attribute and one existing <code>ATTRIBUTE</code>-role attribute per participating object as its identity/display pair</li><li>Extend the existing onboarding curation activity to capture these four fields alongside the object/attribute curation it already performs</li></ul></div>
+            <div class="field"><div class="field-label">Out of scope</div><ul><li>Retrieval logic</li><li>Agent Brain changes</li><li>New <code>AttributeRole</code> values</li><li>Backfilling data for existing entity rows</li><li>Any automatic discovery or inference of these designations</li><li>Any new curation workflow separate from existing onboarding</li></ul></div>
+          </div>
+          <div class="field"><div class="field-label">Components affected</div><p>Business entity metadata, and the existing onboarding curation activity that already populates it.</p></div>
+          <div class="field"><div class="field-label">Architectural invariants</div><p>No new metadata model; <code>AttributeRole</code>'s taxonomy stays closed; no new curation process — the same one process, extended; fully additive — an object without this designation is provably unaffected by everything that follows.</p></div>
+          <div class="field"><div class="field-label">Risks</div><p><strong>Semantic:</strong> mis-designating the wrong attribute as "display" silently produces wrong resolutions downstream — this story's correctness is foundational, not cosmetic. No architectural or backward-compatibility risk; purely additive.</p></div>
+          <div class="field"><div class="field-label">Definition of done</div><p>Every object intended to participate in grounding has all four designations, set through the existing curation activity; objects without them are demonstrably untouched by the capability; no code path infers a designation automatically.</p></div>
+          <div class="field"><div class="field-label">Regression tests</div><p>Existing consumers of entity/attribute metadata (BLR's indexing, prompt rendering) behave identically for objects that don't opt in.</p></div>
+        </div>
+      </div>
+
+      <!-- STORY 2 -->
+      <div class="story">
+        <div class="story-head">
+          <div><span class="story-id">Story 2</span><h3>Deterministic Candidate Retrieval</h3></div>
+          <div class="badge-row"><span class="tag det">Owner: Runtime — execution only</span></div>
+        </div>
+        <div class="story-body">
+          <div class="card" style="margin:0 0 16px;border-left:3px solid var(--danger);background:var(--danger-bg)">
+            <div style="font-family:var(--font-mono);font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;color:var(--danger);margin-bottom:6px">Ownership clarification — reviewed</div>
+            <p style="margin:0;font-size:.87rem">"Executes through the existing governed SQL path" does not mean Runtime authors SQL. Candidate retrieval has exactly <strong>one fixed query shape</strong>, defined once, never composed or varied per question: select the identity and display attributes from the canonical source, filtered by the display attribute against the reference, bounded. Story 1's four metadata fields and the user's reference string only ever <em>substitute values</em> into that unchanging shape — they never choose a different shape. Runtime's contribution is exactly what it already provides for any other query: governance, safety, and audit of something handed to it. Runtime does not decide what to ask, does not compose novel SQL, and is not a second SQL-generation path alongside the Planner's LLM-driven one. If a future change to this story ever requires the query's shape to vary by entity type, by tenant, or by judgment, that is no longer this story — it is SQL authorship, and belongs nowhere in Runtime.</p>
+          </div>
+          <div class="field"><div class="field-label">Objective</div><p>Provide deterministic candidate retrieval: entity type, canonical source, identity attribute, display attribute, and a user reference in; a bounded list of identity/display pairs out — nothing else. The one fixed query shape is executed through Runtime's existing governed execution capability, as a new caller of that capability, not a new execution mechanism and not a new authorship role.</p></div>
+          <div class="field"><div class="field-label">Business value</div><p>The mechanical half of the capability. Generic by construction, so it serves every entity type — Product, Supplier, Store, Invoice, Employee — without type-specific work.</p></div>
+          <div class="grid2">
+            <div class="field"><div class="field-label">Scope</div><ul><li>The single fixed, parameterized retrieval shape</li><li>Executed via the existing governed execution path (SELECT-only, safety-checked, audited identically to any other query)</li></ul></div>
+            <div class="field"><div class="field-label">Out of scope</div><ul><li>Ranking or scoring</li><li>Any decision logic</li><li>Any variation of the query's shape — per entity type, per tenant, or otherwise</li><li>Any call site from Agent Brain (Story 3)</li></ul></div>
+          </div>
+          <div class="field"><div class="field-label">Components affected</div><p>None of the ten frozen components change. This is a new, small caller of the existing governed execution path — the path's own responsibility is unchanged, and Runtime gains no new kind of responsibility, only a new caller.</p></div>
+          <div class="field"><div class="field-label">Architectural invariants</div><p>"Retrieval only, never chooses, never ranks" is enforced structurally — the return shape is incapable of carrying a score or a verdict. Runtime never becomes another semantic or SQL author — enforced by the query having exactly one shape, never composed. SQL Governance Pipeline unchanged, exercised identically.</p></div>
+          <div class="field"><div class="field-label">Risks</div><p><strong>Architectural — the risk this review exists to name:</strong> if implementation lets the query's shape vary (e.g. "just this once, branch the WHERE clause for invoices"), Runtime quietly becomes a second SQL author. Mitigated by treating any request to vary the shape as out of scope for this story, full stop, not as an extension of it. <strong>Runtime:</strong> candidate queries need the same row-limit/timeout discipline every governed query already has — no new class of runtime risk.</p></div>
+          <div class="field"><div class="field-label">Definition of done</div><p>Given Story 1's metadata for any entity type, retrieval returns a correct bounded list for a match, an empty list for no match, runs through the existing governance chain identically to any other query, and does so through the single fixed query shape with no per-call variation — independently of Agent Brain.</p></div>
+          <div class="field"><div class="field-label">Regression tests</div><p>Governance-pipeline coverage confirming this call is safety-checked like any other; a hand-rolled-fake unit test confirming the method's return shape cannot express a ranking or a decision; a test asserting the query shape itself is identical across different entity-type inputs, varying only in substituted values.</p></div>
+        </div>
+      </div>
+
+      <!-- STORY 3 -->
+      <div class="story">
+        <div class="story-head">
+          <div><span class="story-id">Story 3</span><h3>Agent Brain Grounding Step</h3></div>
+          <div class="badge-row"><span class="tag sem">Owner: Agent Brain</span></div>
+        </div>
+        <div class="story-body">
+          <div class="field"><div class="field-label">Objective</div><p>Inside <code>AgentBrain.resolve()</code>, immediately after its existing <code>BusinessLanguageResolver.resolve()</code> call, invoke Story 2's retrieval for BLR-unresolved terms tied to a groundable object, and decide resolved / clarification required / no match — writing the outcome into <code>ResolvedQuestion</code>'s existing resolution and unresolved-term channels, unchanged in shape.</p></div>
+          <div class="field"><div class="field-label">Business value</div><p>The story that actually fixes the original defect. Everything before it is plumbing; everything after it is reuse and visibility.</p></div>
+          <div class="grid2">
+            <div class="field"><div class="field-label">Scope</div><ul><li>The retrieval call</li><li>The three-way judgment</li><li>Writing the outcome into <code>ResolvedQuestion</code>'s existing shape — a new <code>ENTITY</code>-kind resolution for a match, the existing unresolved/candidate channel otherwise</li></ul></div>
+            <div class="field"><div class="field-label">Out of scope</div><ul><li><code>BusinessLanguageResolver</code>'s own matching logic</li><li><code>ExecutionContractBuilder</code>, <code>PromptContextBuilder</code>, <code>ReasoningPlanner</code>, <code>GovernedSqlRuntime</code>, <code>EvidenceStore</code></li><li>Clarification rendering (Story 4) and frontend display (Story 5)</li></ul></div>
+          </div>
+          <div class="field"><div class="field-label">Components affected</div><p>Agent Brain only.</p></div>
+          <div class="field"><div class="field-label">Architectural invariants</div><p>Sole semantic-reasoning owner — this is the only place any judgment happens. Single semantic artifact — <code>ResolvedBusinessModel</code>'s shape is unchanged. Planner stays unaware — it reads the same RESOLUTIONS block, sometimes with one more line.</p></div>
+          <div class="field"><div class="field-label">Risks</div><p><strong>Architectural / semantic — the highest-risk story in the roadmap.</strong> This is the only place a judgment call happens; getting the Case A acceptance threshold wrong (auto-accepting an ambiguous match) directly reintroduces a version of the original defect. No backward-compatibility risk for any object lacking Story 1's metadata — grounding simply never triggers. No new runtime risk beyond Story 2's.</p></div>
+          <div class="field"><div class="field-label">Definition of done</div>
+            <p>Strengthened on review — every point below is a separate, independently checkable guarantee, not one combined statement:</p>
+            <ul>
+              <li>Agent Brain is the only component that reads a candidate list and produces resolved / clarification required / no match — no other component in the roadmap makes this decision, and none is given the means to.</li>
+              <li>A candidate list with more than one entry never auto-resolves under any input — this is provable as a standing property of the decision logic, not just true for the test cases exercised.</li>
+              <li>Every ambiguous outcome routes through clarification (Story 4's path) — there is no third option between "resolved" and "clarification required" for a multi-candidate result.</li>
+              <li>An object carrying none of Story 1's four designations produces byte-identical behavior to today — grounding does not partially engage, does not attempt, and leaves no trace for such an object.</li>
+              <li>Planner's input shape is unchanged except for one additional standard <code>ENTITY</code>-kind resolution line in the RESOLUTIONS block it already parses — no new block, no new field, no new instruction added to the planner's prompt contract.</li>
+            </ul>
+          </div>
+          <div class="field"><div class="field-label">Regression tests</div><p>The same hand-rolled-fake pattern already used for the reasoning loop's own regression coverage — a fake retrieval collaborator scripted to return one / several / none candidates, asserting the resulting <code>ResolvedQuestion</code> shape for each; a dedicated end-to-end replay of the "Women Gold Bangle Set" scenario at the Agent Brain level.</p></div>
+        </div>
+      </div>
+
+      <!-- STORY 4 -->
+      <div class="story">
+        <div class="story-head">
+          <div><span class="story-id">Story 4</span><h3>Reuse Clarification Rendering</h3></div>
+          <div class="badge-row"><span class="tag det">Owner: ChatService</span></div>
+        </div>
+        <div class="story-body">
+          <div class="field"><div class="field-label">Objective</div><p>When Agent Brain's resolution signals clarification required (Case B), route it through ChatService's existing terminal-outcome and clarification-rendering path — the same family of pre-planning check <code>ExecutionContract.isEmpty()</code> already performs — triggered one step earlier than today's router-only trigger.</p></div>
+          <div class="field"><div class="field-label">Business value</div><p>Turns Story 3's judgment into something the user actually sees, using zero new UI or response shape.</p></div>
+          <div class="grid2">
+            <div class="field"><div class="field-label">Scope</div><p>One additional pre-planning check in ChatService, same family as an existing one.</p></div>
+            <div class="field"><div class="field-label">Out of scope</div><p>No new decision type beyond the existing clarification path; no router prompt changes; no new response field.</p></div>
+          </div>
+          <div class="field"><div class="field-label">Components affected</div><p>ChatService only.</p></div>
+          <div class="field"><div class="field-label">Architectural invariants</div><p>No new conversation state, no second clarification subsystem — the exact existing rendering is reused, not duplicated.</p></div>
+          <div class="field"><div class="field-label">Risks</div><p>Lowest-risk story in the roadmap. No architectural, backward-compatibility, semantic, or runtime risk of note — ChatService makes no judgment here, only routes one Agent Brain already made.</p></div>
+          <div class="field"><div class="field-label">Definition of done</div><p>A Case B resolution produces a user experience identical in shape to today's router-originated clarification.</p></div>
+          <div class="field"><div class="field-label">Regression tests</div><p>Existing clarification tests pass unmodified, proving no change to the router-originated path; one new test confirming the Agent-Brain-originated trigger renders identically.</p></div>
+        </div>
+      </div>
+
+      <!-- STORY 5 -->
+      <div class="story">
+        <div class="story-head">
+          <div><span class="story-id">Story 5</span><h3>Business Understanding Rendering</h3></div>
+          <div class="badge-row"><span class="tag fe">Owner: Frontend</span></div>
+        </div>
+        <div class="story-body">
+          <div class="field"><div class="field-label">Objective</div><p>Extend the Business Understanding section's existing resolution-rendering logic so a Business Reference resolution displays with the same fidelity every other resolution kind already has, including a provenance note when the resolution followed a clarification.</p></div>
+          <div class="field"><div class="field-label">Business value</div><p>Closes the loop on trust — the user sees exactly what Zevra understood "Women Gold Bangle Set" to mean, using a surface that already exists and is already familiar.</p></div>
+          <div class="grid2">
+            <div class="field"><div class="field-label">Scope</div><p>One additional case in the section's existing source/rationale mapping logic.</p></div>
+            <div class="field"><div class="field-label">Out of scope</div><p>No changes to the reasoning-trace component; no changes to the clarification question UI itself (Story 4's concern); no new feedback categories.</p></div>
+          </div>
+          <div class="field"><div class="field-label">Components affected</div><p>The Business Understanding section only.</p></div>
+          <div class="field"><div class="field-label">Architectural invariants</div><p>Transparency stays inside the one existing surface — no second transparency mechanism.</p></div>
+          <div class="field"><div class="field-label">Risks</div><p>No architectural, backward-compatibility, or runtime risk — frontend-only, additive. A mislabeled provenance note is a cosmetic risk; the underlying data is already correct by the time it reaches this story.</p></div>
+          <div class="field"><div class="field-label">Definition of done</div><p>A resolved business reference renders with user reference, resolved entity, confidence, and reason; a clarification-derived resolution additionally shows that provenance.</p></div>
+          <div class="field"><div class="field-label">Regression tests</div><p>Existing resolution rendering for every other kind verified unchanged; new coverage for the reference-resolution case.</p></div>
+        </div>
+      </div>
+
+      <!-- STORY 6 -->
+      <div class="story">
+        <div class="story-head">
+          <div><span class="story-id">Story 6</span><h3>Conversation Continuity Validation</h3></div>
+          <div class="badge-row"><span class="tag nt">Owner: Validation only</span></div>
+        </div>
+        <div class="story-body">
+          <div class="field"><div class="field-label">Objective</div><p>Confirm — without modifying anything — that the already-shipped evidence-carry-forward mechanism correctly carries a resolved business reference into a follow-up turn ("when did we last reorder it?").</p></div>
+          <div class="field"><div class="field-label">Business value</div><p>Proves the capability is complete without inventing new state, exactly as required.</p></div>
+          <div class="grid2">
+            <div class="field"><div class="field-label">Scope</div><p>Test-only. A two-turn conversation: resolve a reference, then ask a follow-up referring back to it.</p></div>
+            <div class="field"><div class="field-label">Out of scope</div><p>Any new persistence, conversation field, or cache — explicitly excluded by the frozen constraints, and this story exists to prove none is needed.</p></div>
+          </div>
+          <div class="field"><div class="field-label">Components affected</div><p>None, by design.</p></div>
+          <div class="field"><div class="field-label">Architectural invariants</div><p>No new conversation state, no new execution artifact, no new cache.</p></div>
+          <div class="field"><div class="field-label">Risks</div><p>The one place this roadmap should pause rather than improvise: if validation finds the resolved entity's canonical value doesn't survive clearly enough into the persisted evidence for a follow-up to reuse it, that is a finding to bring back to the architecture conversation — not something to patch quietly inside this story.</p></div>
+          <div class="field"><div class="field-label">Definition of done</div><p>The two-turn scenario demonstrably reuses the resolution with zero components touched.</p></div>
+          <div class="field"><div class="field-label">Regression tests</div><p>Extends the existing follow-up continuation regression fixture with a business-reference-bearing seed step.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="deps">
+      <div class="num">§3</div>
+      <h2>Dependency graph</h2>
+      <div class="diagram">Story 1 — Metadata Foundation
+     │
+     ▼
+Story 2 — Candidate Retrieval
+     │
+     ▼
+Story 3 — Agent Brain Grounding Step
+     │
+     ├──────────────┬──────────────┐
+     ▼              ▼              ▼
+Story 4          Story 5        Story 6
+Clarification    Business       Continuity
+Wiring           Understanding  Validation
+        <div class="cap">Stories 4, 5, and 6 all depend on Story 3's output shape, not on each other — they can be built and tested in parallel once Story 3's data shape (not its full implementation) is agreed. Stories 1 → 2 → 3 are strictly sequential: each is the input the next one acts on.</div>
+      </div>
+    </section>
+
+    <section id="risk">
+      <div class="num">§4</div>
+      <h2>Risk assessment</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Story</th><th>Architectural</th><th>Backward-compat</th><th>Semantic</th><th>Runtime</th></tr></thead>
+          <tbody>
+            <tr><td>1 · Metadata</td><td>A second, ad hoc curation process forming outside onboarding would fragment metadata governance</td><td>None — absence changes nothing</td><td><strong>Mis-tagging identity/display propagates silently downstream</strong></td><td>None</td></tr>
+            <tr><td>2 · Retrieval</td><td><strong>If the query's shape is ever allowed to vary per call, Runtime becomes a second SQL author</strong> — the single-fixed-shape constraint is the entire mitigation</td><td>None — new, uncalled capability</td><td>None — makes no judgments by design</td><td>Standard row-limit/timeout discipline, nothing new</td></tr>
+            <tr><td>3 · Agent Brain</td><td><strong>Highest risk — the only judgment-making story</strong></td><td>None for un-designated objects</td><td><strong>Wrong Case A/B threshold reproduces the original defect</strong></td><td>None beyond Story 2's</td></tr>
+            <tr><td>4 · Clarification</td><td>Minimal — new trigger, same path</td><td>None — additive branch</td><td>None — routes, does not judge</td><td>None</td></tr>
+            <tr><td>5 · Transparency</td><td>None</td><td>None — additive rendering</td><td>Cosmetic only — data already correct</td><td>None — frontend only</td></tr>
+            <tr><td>6 · Continuity</td><td>None by design</td><td>None — validation only</td><td>A finding here is a stop-and-discuss signal, not a patch signal</td><td>None</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="testing">
+      <div class="num">§5</div>
+      <h2>Testing strategy</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Category</th><th>Covers</th><th>Method</th></tr></thead>
+          <tbody>
+            <tr><td>Unit</td><td>Stories 1, 2, 5</td><td>Metadata shape; retrieval's bounded, decision-incapable return shape; rendering mapping — no LLM, no database, hand-rolled fakes per existing convention</td></tr>
+            <tr><td>Integration</td><td>Stories 2 + 3</td><td>Agent Brain wired to a fake governed-retrieval collaborator, proving the internal grounding flow without a real LLM or database</td></tr>
+            <tr><td>Conversation</td><td>Stories 3 + 4</td><td>Full-turn test proving a real question resolves a reference end to end</td></tr>
+            <tr><td>Follow-up conversation</td><td>Story 6</td><td>Two-turn scenario proving continuity needs no new state</td></tr>
+            <tr><td>Ambiguity</td><td>Stories 3 + 4</td><td>Fake retrieval scripted to return several candidates; assert the clarification path fires and nothing downstream executes prematurely</td></tr>
+            <tr><td>No match</td><td>Story 3</td><td>Fake retrieval scripted to return zero candidates; assert silent fallback and unchanged planner behavior</td></tr>
+            <tr><td>Transparency</td><td>Story 5, and the Story 3 ↔ 5 boundary</td><td>Rendering tests plus one contract test confirming the resolution shape Agent Brain emits is exactly what the frontend mapping expects</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="migration">
+      <div class="num">§6</div>
+      <h2>Migration strategy</h2>
+      <p>Metadata evolution is additive only: restoring <code>entity_type</code> and designating identity/display attributes (Story 1) requires no backfill of existing rows and no schema change to anything currently in use. An object that is never given these designations simply never triggers grounding — its behavior today is its behavior after every story in this roadmap ships. There is no cutover, no big-bang migration, and no tenant-wide rollout requirement: which objects participate in grounding is a data-curation decision made incrementally, object by object, domain by domain, entirely independent of deployment. Every existing tenant continues working unchanged the moment this ships, and gains the capability only where its own metadata is deliberately extended to support it.</p>
+    </section>
+
+    <section id="transparency">
+      <div class="num">§7</div>
+      <h2>Transparency — when Business Understanding displays what</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Outcome</th><th>What the user sees</th><th>Where</th></tr></thead>
+          <tbody>
+            <tr><td>Resolved</td><td>A normal Business Understanding row — user reference, resolved entity, confidence, reason</td><td>Existing Business Understanding section, same as any other resolution kind</td></tr>
+            <tr><td>Clarification required</td><td>The clarification question itself, as the turn's answer — nothing to show in Business Understanding yet, since nothing has been resolved</td><td>Existing clarification rendering (Story 4)</td></tr>
+            <tr><td>Clarification resolved (next turn)</td><td>A normal resolution row, additionally noting it followed a clarification</td><td>Existing Business Understanding section</td></tr>
+            <tr><td>No match</td><td>Nothing renders — silence, consistent with every other unresolved term today</td><td>N/A by design — the zero-cost fallback principle already governing every unresolved term</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="validation">
+      <div class="num">§8</div>
+      <h2>Architecture validation</h2>
+      <p class="lede">Which story is responsible for each invariant, and the specific mechanism that preserves it.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Invariant</th><th>Responsible stories</th><th>How preserved</th></tr></thead>
+          <tbody>
+            <tr><td>Agent Brain owns semantic reasoning</td><td>3</td><td>The only story that makes a judgment; every other story routes, retrieves, or renders what Story 3 already decided</td></tr>
+            <tr><td>Runtime never chooses</td><td>2</td><td>Return shape is structurally a candidate list — incapable of expressing a rank or decision. Reviewed: Runtime also never <em>authors</em> — retrieval uses one fixed, pre-defined query shape that is only ever parameterized, never composed or varied, so there is no second SQL-generation path alongside the Planner's</td></tr>
+            <tr><td>Planner remains SQL-only</td><td>2, 3</td><td>Planner's input is unchanged — the same RESOLUTIONS block, sometimes with one more line it already knows how to consume. Reviewed: this holds only because Story 2's retrieval query is fixed-shape and non-authored — if that constraint were ever relaxed, "Planner remains SQL-only" and "Runtime never chooses" would both be at risk simultaneously</td></tr>
+            <tr><td>ExecutionContract remains metadata-only</td><td>3</td><td>Resolved references are written into <code>ResolvedQuestion</code>, never into <code>ExecutionContract</code> — no story touches the contract's shape</td></tr>
+            <tr><td>PromptContext remains the Planner interface</td><td>3</td><td>Unmodified — grounding completes before <code>PromptContextBuilder</code> runs, same as every existing resolution kind</td></tr>
+            <tr><td>No second semantic pipeline</td><td>3</td><td>One call site, inside the one existing <code>resolve()</code> method — no parallel entry point anywhere in the roadmap</td></tr>
+            <tr><td>No duplicate semantic artifact</td><td>3</td><td><code>ResolvedQuestion</code> is extended in use, not duplicated in kind — Story 3 writes into its existing resolution/unresolved channels only</td></tr>
+            <tr><td>No duplicate source of truth</td><td>1, 3</td><td>Story 1's metadata has one home (entity/attribute records); Story 3's outcome has one home (<code>ResolvedQuestion</code>) — nothing is copied into a second location by any story in this roadmap</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <footer>
+      Baseline: Enterprise Business Reference Resolution architecture investigation, ADR, and grounding contract (prior sessions). This roadmap allocates approved architecture into implementation work only — no decision made here revisits that baseline. Reviewed once against that baseline: Story 2's ownership wording was tightened so Runtime's execution role cannot be read as SQL authorship, Story 1 now states its curation responsibility explicitly, Story 3's Definition of Done was strengthened into five independently checkable guarantees, and an Architecture Readiness Gate (§0) was added as a preface, not a story.
+    </footer>
+  </main>
+</div>
+
+</body>
+</html>

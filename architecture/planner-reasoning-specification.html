@@ -1,0 +1,380 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spec — Planner Reasoning for Textual Business References</title>
+<style>
+  :root{
+    --ink-900:#14171a; --ink-700:#3a4045; --ink-muted:#5b625d;
+    --paper-0:#f4f5f3; --paper-1:#ffffff; --line:#d8dad6; --line-soft:#e6e7e4;
+    --set:#9c6a0f; --set-bg:#f6ecd8; --set-ink:#7a5309;
+    --row:#1f6f74; --row-bg:#dcecec; --row-ink:#155559;
+    --gap:#9a3324; --gap-bg:#f6e3de; --gap-ink:#7a2a1d;
+    --font-display:-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;
+    --font-body:-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;
+    --font-mono:ui-monospace,"SF Mono","Cascadia Code","Roboto Mono",Menlo,Consolas,monospace;
+    --measure:74ch;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --ink-900:#e9e8e3; --ink-700:#c7c9c4; --ink-muted:#9aa19c;
+      --paper-0:#14171a; --paper-1:#1a1e20; --line:#2c3234; --line-soft:#23282a;
+      --set:#d9a94b; --set-bg:#3a2f16; --set-ink:#e8c073;
+      --row:#4fa8ac; --row-bg:#123638; --row-ink:#7cc9cc;
+      --gap:#d9776a; --gap-bg:#3a201c; --gap-ink:#e5988c;
+    }
+  }
+  :root[data-theme="dark"]{
+    --ink-900:#e9e8e3; --ink-700:#c7c9c4; --ink-muted:#9aa19c;
+    --paper-0:#14171a; --paper-1:#1a1e20; --line:#2c3234; --line-soft:#23282a;
+    --set:#d9a94b; --set-bg:#3a2f16; --set-ink:#e8c073;
+    --row:#4fa8ac; --row-bg:#123638; --row-ink:#7cc9cc;
+    --gap:#d9776a; --gap-bg:#3a201c; --gap-ink:#e5988c;
+  }
+  :root[data-theme="light"]{
+    --ink-900:#14171a; --ink-700:#3a4045; --ink-muted:#5b625d;
+    --paper-0:#f4f5f3; --paper-1:#ffffff; --line:#d8dad6; --line-soft:#e6e7e4;
+    --set:#9c6a0f; --set-bg:#f6ecd8; --set-ink:#7a5309;
+    --row:#1f6f74; --row-bg:#dcecec; --row-ink:#155559;
+    --gap:#9a3324; --gap-bg:#f6e3de; --gap-ink:#7a2a1d;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;background:var(--paper-0);color:var(--ink-900);}
+  body{font-family:var(--font-body);font-size:16px;line-height:1.6;}
+  ::selection{background:var(--row-bg);color:var(--ink-900);}
+  a{color:var(--row-ink);}
+  a:focus-visible, summary:focus-visible{outline:2px solid var(--row);outline-offset:2px;}
+
+  .shell{display:grid;grid-template-columns:230px minmax(0,var(--measure));gap:56px;max-width:1220px;margin:0 auto;padding:48px 24px 120px;}
+  @media (max-width:920px){.shell{grid-template-columns:1fr;}.rail{display:none;}}
+
+  .rail{position:sticky;top:32px;align-self:start;font-size:12.5px;}
+  .rail .kicker{font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.08em;color:var(--ink-muted);font-size:10.5px;margin-bottom:14px;}
+  .rail ol{list-style:none;margin:0 0 26px;padding:0;display:flex;flex-direction:column;gap:2px;}
+  .rail li a{display:block;padding:5px 8px;border-radius:3px;color:var(--ink-700);text-decoration:none;border-left:2px solid transparent;}
+  .rail li a:hover{background:var(--paper-1);border-left-color:var(--line);}
+  .rail .legend{display:flex;flex-direction:column;gap:8px;padding-top:16px;border-top:1px solid var(--line);}
+  .swatch{display:flex;align-items:center;gap:8px;color:var(--ink-muted);}
+  .swatch i{width:11px;height:11px;border-radius:2px;flex:none;}
+  .swatch.rw i{background:var(--row);} .swatch.st i{background:var(--set);} .swatch.gp i{background:var(--gap);}
+
+  header.doc-head{margin-bottom:44px;}
+  .doc-eyebrow{font-family:var(--font-mono);font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-muted);display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px;}
+  .status-pill{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.04em;padding:2px 8px;border-radius:20px;border:1px solid var(--row);color:var(--row-ink);background:var(--row-bg);}
+  h1{font-family:var(--font-display);font-size:1.95rem;font-weight:700;letter-spacing:-.015em;line-height:1.16;margin:0 0 12px;text-wrap:balance;}
+  .doc-sub{color:var(--ink-muted);font-size:1.02rem;max-width:62ch;text-wrap:balance;}
+
+  section{margin-top:60px;padding-top:8px;scroll-margin-top:24px;}
+  section > .num{font-family:var(--font-mono);color:var(--ink-muted);font-size:12.5px;}
+  h2{font-family:var(--font-display);font-size:1.3rem;font-weight:700;letter-spacing:-.01em;margin:2px 0 6px;text-wrap:balance;}
+  h3{font-family:var(--font-display);font-size:1rem;font-weight:700;margin:24px 0 8px;}
+  p{margin:0 0 14px;color:var(--ink-700);}
+  strong{color:var(--ink-900);}
+  .lede{color:var(--ink-muted);font-size:.97rem;margin-bottom:20px;}
+  code{font-family:var(--font-mono);font-size:.86em;background:var(--paper-1);border:1px solid var(--line-soft);padding:.1em .38em;border-radius:4px;color:var(--ink-900);}
+  ul,ol{padding-left:1.25em;color:var(--ink-700);}
+  li{margin-bottom:6px;}
+
+  .principle{background:var(--paper-1);border:1px solid var(--line);border-left:3px solid var(--row);border-radius:8px;padding:16px 20px;margin:14px 0;}
+  .principle .p-num{font-family:var(--font-mono);font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;color:var(--row-ink);margin-bottom:6px;}
+  .principle.key{border-left-color:var(--set);}
+  .principle.key .p-num{color:var(--set-ink);}
+  .principle p{margin:0;font-size:.93rem;}
+  .principle p + p{margin-top:8px;}
+
+  .clarify{background:var(--paper-1);border:1px dashed var(--line);border-radius:8px;padding:14px 18px;margin:10px 0;}
+  .clarify .c-label{font-family:var(--font-mono);font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-muted);margin-bottom:6px;}
+  .clarify p{margin:0;font-size:.9rem;}
+
+  .limitbox{background:var(--gap-bg);border:1px solid var(--gap);border-radius:8px;padding:16px 20px;margin:14px 0;}
+  .limitbox .l-label{font-family:var(--font-mono);font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;color:var(--gap-ink);margin-bottom:6px;}
+  .limitbox p{margin:0;font-size:.93rem;color:var(--ink-700);}
+
+  .table-wrap{overflow-x:auto;margin:16px 0 22px;border:1px solid var(--line);border-radius:8px;}
+  table{border-collapse:collapse;width:100%;font-size:.85rem;min-width:780px;}
+  th,td{text-align:left;padding:8px 11px;border-bottom:1px solid var(--line-soft);vertical-align:top;}
+  thead th{background:var(--paper-1);font-family:var(--font-mono);font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-muted);border-bottom:1px solid var(--line);position:sticky;top:0;}
+  tbody tr:last-child td{border-bottom:none;}
+  tbody tr:hover{background:var(--paper-1);}
+  .num-cell{font-family:var(--font-mono);color:var(--ink-muted);width:32px;}
+
+  .tag{font-family:var(--font-mono);font-size:10px;letter-spacing:.03em;padding:2px 7px;border-radius:20px;white-space:nowrap;display:inline-block;}
+  .tag.row{background:var(--row-bg);color:var(--row-ink);border:1px solid var(--row);}
+  .tag.set{background:var(--set-bg);color:var(--set-ink);border:1px solid var(--set);}
+  .tag.gap{background:var(--gap-bg);color:var(--gap-ink);border:1px solid var(--gap);}
+
+  .group-head{background:var(--paper-1) !important;}
+  .group-head td{font-family:var(--font-mono);font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-muted);padding-top:14px;padding-bottom:6px;border-bottom:1px solid var(--line);}
+
+  .quickref{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:16px 0 22px;}
+  @media (max-width:640px){.quickref{grid-template-columns:1fr;}}
+  .qcard{border:1px solid var(--line);border-radius:8px;padding:14px 16px;background:var(--paper-1);}
+  .qcard.set{border-top:3px solid var(--set);}
+  .qcard.row{border-top:3px solid var(--row);}
+  .qcard h4{margin:0 0 8px;font-family:var(--font-display);font-size:.88rem;}
+  .qcard ul{margin:0;font-size:.85rem;padding-left:1.1em;}
+
+  .revlist{list-style:none;padding:0;margin:0 0 20px;}
+  .revlist li{background:var(--paper-1);border:1px solid var(--line);border-radius:6px;padding:8px 14px;margin-bottom:6px;font-size:.88rem;}
+
+  footer{margin-top:80px;padding-top:22px;border-top:1px solid var(--line);color:var(--ink-muted);font-size:.83rem;}
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <nav class="rail">
+    <div class="kicker">Contents</div>
+    <ol>
+      <li><a href="#scope">Scope &amp; limitations</a></li>
+      <li><a href="#nongoals">Non-goals</a></li>
+      <li><a href="#principles">1 · Principles</a></li>
+      <li><a href="#quickref">2 · Quick reference</a></li>
+      <li><a href="#matrix">3 · Regression matrix</a></li>
+      <li><a href="#validation">4 · Validation plan</a></li>
+      <li><a href="#consistency">5 · Consistency review</a></li>
+    </ol>
+    <div class="legend">
+      <div class="swatch rw"><i></i>Correct row found</div>
+      <div class="swatch st"><i></i>Correct set found</div>
+      <div class="swatch gp"><i></i>Out of scope</div>
+    </div>
+  </nav>
+
+  <main>
+    <header class="doc-head">
+      <div class="doc-eyebrow"><span class="status-pill">Revised — architecture review applied</span> Design specification + validation plan · No code, no architecture</div>
+      <h1>Planner Reasoning Specification — Textual Business References</h1>
+      <p class="doc-sub">How the existing Planner should reason about free-text business attributes when writing SQL, and the regression matrix used to validate that reasoning before any new architecture is considered.</p>
+    </header>
+
+    <div class="clarify" style="border-color:var(--row);margin-bottom:0;">
+      <div class="c-label" style="color:var(--row-ink)">Revision note</div>
+      <p>This revision applies exactly the five corrections from the preceding architecture review: Principle 4 rewritten to intent rather than mechanism; the regression matrix regraded on business outcome rather than SQL strategy; an explicit Non-Goals section added; former Principle 5 relocated to Limitations, since it documents a boundary rather than a rule the Planner follows; and three boundary clarifications added to resolve named under-specification. No new principle, capability, or architecture is introduced.</p>
+    </div>
+
+    <section id="scope">
+      <div class="num">Scope</div>
+      <h2>What this is, and isn't</h2>
+      <p>This is a reasoning contract for the Planner's existing prompt — a statement of principles the prompt should encode, not new wording to paste in and not a new component. It governs one narrow question: given a free-text business attribute and a user's reference to it, when should the Planner filter with exact equality, when should it filter with partial matching, and when should it decline to assume its own guess is correct. It does not touch Agent Brain, the Evaluator, Runtime, or any metadata model.</p>
+
+      <h3>Limitations</h3>
+      <div class="limitbox">
+        <div class="l-label">This is a boundary statement, not a Planner rule</div>
+        <p>Everything in this specification improves the <em>construction</em> of a filter. Nothing in it gives the Planner a way to <em>verify</em> that construction against real data. A partial-match filter, however well-reasoned, remains a guess about intent — better shaped, never confirmed. The Planner has no channel to know, in advance, whether zero, one, or several real rows will match. This limitation is unconditional: it applies to every principle below, including the ones that resolve the demonstrated inconsistency. Nothing in this document should be read as closing that gap — that determination belongs to the earlier architecture investigation's boundary between reasoning-solvable and capability-requiring problems, not to this specification.</p>
+      </div>
+    </section>
+
+    <section id="nongoals">
+      <div class="num">Non-goals</div>
+      <h2>Question classes intentionally out of scope</h2>
+      <p class="lede">Not because these are unsolvable — because this specification is scoped to one thing (matching strategy for a single reference against a single column) and should not be read as silently covering more than that.</p>
+      <ul>
+        <li><strong>Aggregation over a multi-row match.</strong> When a partial match returns more than one row and the question aggregates ("total sales of bangle products"), how those rows should be combined is not addressed here.</li>
+        <li><strong>Negation and exclusion.</strong> "Contains X but not Y" is not addressed.</li>
+        <li><strong>Explicit multi-value enumeration.</strong> "Either Supplier A or Supplier B," naming multiple values of the same reference type, is a different shape than the multiple-different-entity-types case this specification does cover.</li>
+        <li><strong>Multi-hop, nested reference resolution.</strong> Chains of joins where a reference at one hop depends on resolving a reference at another are not addressed.</li>
+        <li><strong>Column-targeting ambiguity.</strong> When a term could plausibly refer to either an enumerated/coded column (already governed, unchanged) or a free-text column, which one the Planner should check, or whether it should check both, is not addressed.</li>
+      </ul>
+    </section>
+
+    <section id="principles">
+      <div class="num">§1</div>
+      <h2>Reasoning principles</h2>
+
+      <div class="principle key">
+        <div class="p-num">Principle 0 — the one that fixes the demonstrated inconsistency</div>
+        <p><strong>Matching strategy is a property of the column, not the question.</strong> Today, the same reference ("bangle") produced different SQL depending on whether the surrounding sentence read as a browse request or a lookup request. That's backwards. Whether a filter should be exact or partial must be decided by what kind of attribute is being filtered — a free-text name/description versus a coded identifier — never by the grammatical shape of the sentence around it. The same reference, against the same column, must be reasoned about the same way regardless of how the question happens to be phrased.</p>
+      </div>
+
+      <div class="principle">
+        <div class="p-num">Principle 1 — default posture for free text</div>
+        <p>For any attribute that is a human-authored name, title, or description (not a coded or enumerated value), treat the user's phrase as evidence of intent, not a guarantee of exact stored spelling. The default assumption is that punctuation, spacing, capitalization, and word form may differ between what the user typed and what is stored — not that they match.</p>
+      </div>
+
+      <div class="principle">
+        <div class="p-num">Principle 2 — when exact equality is appropriate</div>
+        <p>Exact equality is appropriate only when there is independent reason to trust the literal is already canonical: it came from a resolved RESOLUTIONS or LITERAL CANDIDATES entry (unchanged, existing mechanism), or it is shaped like an identifier or code the user is clearly quoting verbatim — an invoice number, a PO number, a SKU, a promotion code, a store number. A number or a short alphanumeric code is being supplied as a code, not described in language, and should be matched as one — tolerant of surrounding punctuation (a leading "#"), but not of a wrong digit.</p>
+      </div>
+
+      <div class="principle">
+        <div class="p-num">Principle 3 — when partial matching is appropriate</div>
+        <p>Partial matching is the default for any free-text, unconfirmed reference — not the exception reached for only when a query "feels" like browsing. This includes category fragments, full-name paraphrases, and anything without independent confirmation of exact spelling.</p>
+      </div>
+
+      <div class="principle">
+        <div class="p-num">Principle 4 — tolerate formatting differences, not just spelling differences</div>
+        <p>A stored value may differ from the user's phrasing in punctuation, spacing, or minor formatting without differing in meaning. The Planner should not require a reference to match a stored value across its entire length to recognize they refer to the same thing — an incidental difference somewhere in the phrase should not, by itself, prevent a correct match. This is a statement of intent, not a matching technique: it does not prescribe how that tolerance is achieved, only that it is expected.</p>
+      </div>
+
+      <div class="principle">
+        <div class="p-num">Principle 5 — this does not touch what already works</div>
+        <p>Columns with an existing legal-values list (RESOLUTIONS, LITERAL CANDIDATES) are already governed, already deterministic, and already correct. This specification fills the gap for columns that have neither — it does not modify or duplicate the existing enum-column behavior.</p>
+      </div>
+
+      <h3>Boundary clarifications</h3>
+      <p class="lede">Not new principles — resolving specific edge cases the six principles above leave undecided.</p>
+
+      <div class="clarify">
+        <div class="c-label">When both strategies would succeed</div>
+        <p>If a user's phrase already matches a stored value exactly, a tolerant filter still finds it — exact presence trivially satisfies a tolerant match. Behavior should not depend on the user coincidentally using perfect spelling: for an unconfirmed free-text column, apply the same tolerant posture regardless of whether the given phrase happens to look exact. Consistency, not precision, is what makes this predictable.</p>
+      </div>
+
+      <div class="clarify">
+        <div class="c-label">Mixed identifier + descriptive references</div>
+        <p>A reference is not always purely one or the other — "Invoice 12345 Customer Copy" contains both a code and descriptive words. Classify each part of a reference independently rather than forcing the whole phrase into a single bucket: the code-shaped portion follows Principle 2, the descriptive portion follows Principle 1/3.</p>
+      </div>
+
+      <div class="clarify">
+        <div class="c-label">Intentionally broad references</div>
+        <p>A tolerant filter matching many rows is not evidence the reasoning was wrong — breadth can be a property of the data, not a mistake in the query. The Planner is not expected to judge whether a given term is "too generic" before filtering; it is expected to apply the same posture consistently and let the actual result — one row, several, or none — speak for itself.</p>
+      </div>
+    </section>
+
+    <section id="quickref">
+      <div class="num">§2</div>
+      <h2>Quick reference</h2>
+      <div class="quickref">
+        <div class="qcard set">
+          <h4><span class="tag set">Exact</span> Use exact equality when…</h4>
+          <ul>
+            <li>The literal came from RESOLUTIONS or LITERAL CANDIDATES</li>
+            <li>The reference is purely numeric or code-shaped (invoice #, PO #, SKU, promo code, store/warehouse code)</li>
+            <li>The user is clearly quoting an identifier, not describing something in language</li>
+          </ul>
+        </div>
+        <div class="qcard row">
+          <h4><span class="tag row">Tolerant</span> Filter tolerantly when…</h4>
+          <ul>
+            <li>The attribute is a free-text name, title, or description</li>
+            <li>No legal-values list confirms the exact spelling</li>
+            <li>The reference is a category fragment, paraphrase, or full name typed from memory</li>
+            <li>Regardless of whether the question reads as a browse or a lookup</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="matrix">
+      <div class="num">§3</div>
+      <h2>Regression matrix — 58 scenarios</h2>
+      <p class="lede">Grouped by category, spanning all seven named entity types. Graded on business outcome — the correct row, the correct set, or a correct decline — not on which SQL mechanism produced it, so the validation stays valid even if implementation achieves the same outcome by a different means than the one that happened to prove the point during investigation. The final group is a deliberate negative control: scenarios expected to remain unresolved even after this specification is applied.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th class="num-cell">#</th><th>Entity</th><th>User reference</th><th>Stored value</th><th>Expected outcome</th><th>Note</th></tr></thead>
+          <tbody>
+            <tr class="group-head"><td colspan="6">A · Category / generic fragments</td></tr>
+            <tr><td class="num-cell">1</td><td>Product</td><td>"bangle"</td><td>Women's Gold Bangle Set</td><td><span class="tag row">Correct row found</span></td><td>The original demonstrated case</td></tr>
+            <tr><td class="num-cell">2</td><td>Product</td><td>"parka"</td><td>Women's Alpine Down Parka</td><td><span class="tag row">Correct row found</span></td><td></td></tr>
+            <tr><td class="num-cell">3</td><td>Supplier</td><td>"textiles"</td><td>Lakeside Textiles LLC</td><td><span class="tag row">Correct row found</span></td><td></td></tr>
+            <tr><td class="num-cell">4</td><td>Warehouse</td><td>"distribution"</td><td>Eastern Distribution Center</td><td><span class="tag row">Correct row found</span></td><td></td></tr>
+            <tr><td class="num-cell">5</td><td>Customer</td><td>"corp"</td><td>Acme Corp Holdings</td><td><span class="tag set">Correct set found</span></td><td>Legitimately returns several rows — a correct set, not a defect</td></tr>
+            <tr><td class="num-cell">6</td><td>Store</td><td>"downtown"</td><td>Downtown Flagship Store</td><td><span class="tag row">Correct row found</span></td><td></td></tr>
+            <tr><td class="num-cell">7</td><td>Promotion</td><td>"summer"</td><td>Summer Clearance Promotion 2026</td><td><span class="tag row">Correct row found</span></td><td></td></tr>
+            <tr><td class="num-cell">8</td><td>Promotion</td><td>"holiday"</td><td>Holiday Bundle Discount</td><td><span class="tag row">Correct row found</span></td><td></td></tr>
+
+            <tr class="group-head"><td colspan="6">B · Possessive punctuation</td></tr>
+            <tr><td class="num-cell">9</td><td>Product</td><td>"Women Gold Bangle Set"</td><td>Women's Gold Bangle Set</td><td><span class="tag row">Correct row found</span></td><td>The original motivating defect</td></tr>
+            <tr><td class="num-cell">10</td><td>Product</td><td>"Mens Leather Boot"</td><td>Men's Leather Chelsea Boot</td><td><span class="tag row">Correct row found</span></td><td></td></tr>
+            <tr><td class="num-cell">11</td><td>Supplier</td><td>"Peoples Textile Co"</td><td>People's Textile Co.</td><td><span class="tag row">Correct row found</span></td><td></td></tr>
+            <tr><td class="num-cell">12</td><td>Store</td><td>"Kids Corner Store"</td><td>Kid's Corner Store</td><td><span class="tag row">Correct row found</span></td><td></td></tr>
+            <tr><td class="num-cell">13</td><td>Customer</td><td>"Smiths Auto Group"</td><td>Smith's Auto Group</td><td><span class="tag row">Correct row found</span></td><td></td></tr>
+            <tr><td class="num-cell">14</td><td>Warehouse</td><td>"Managers Storage Annex"</td><td>Manager's Storage Annex</td><td><span class="tag row">Correct row found</span></td><td></td></tr>
+
+            <tr class="group-head"><td colspan="6">C · Singular / plural</td></tr>
+            <tr><td class="num-cell">15</td><td>Product</td><td>"Boots"</td><td>Men's Leather Chelsea Boot</td><td><span class="tag row">Correct row found</span></td><td></td></tr>
+            <tr><td class="num-cell">16</td><td>Supplier</td><td>"Textile Suppliers"</td><td>Textile Supplier Inc.</td><td><span class="tag row">Correct row found</span></td><td></td></tr>
+            <tr><td class="num-cell">17</td><td>Customer</td><td>"Retail Store"</td><td>Retail Stores LLC</td><td><span class="tag row">Correct row found</span></td><td></td></tr>
+            <tr><td class="num-cell">18</td><td>Store</td><td>"Warehouse"</td><td>Warehouses Direct Outlet</td><td><span class="tag row">Correct row found</span></td><td></td></tr>
+            <tr><td class="num-cell">19</td><td>Promotion</td><td>"Discounts"</td><td>Discount Program Q3</td><td><span class="tag row">Correct row found</span></td><td></td></tr>
+            <tr><td class="num-cell">20</td><td>Product</td><td>"Scarfs"</td><td>Women's Cashmere Wrap Scarves</td><td><span class="tag row">Correct row found</span></td><td>Common wording variant, not just plural</td></tr>
+
+            <tr class="group-head"><td colspan="6">D · Spacing / hyphenation / concatenation</td></tr>
+            <tr><td class="num-cell">21</td><td>Supplier</td><td>"Wal Mart Distribution"</td><td>WalMart Distribution Inc.</td><td><span class="tag row">Correct row found</span></td><td></td></tr>
+            <tr><td class="num-cell">22</td><td>Store</td><td>"7 Eleven Downtown"</td><td>7-Eleven Downtown</td><td><span class="tag row">Correct row found</span></td><td></td></tr>
+            <tr><td class="num-cell">23</td><td>Product</td><td>"Nike AirMax Runner"</td><td>Nike Air Max Runner</td><td><span class="tag row">Correct row found</span></td><td></td></tr>
+            <tr><td class="num-cell">24</td><td>Warehouse</td><td>"North East Hub"</td><td>Northeast Hub</td><td><span class="tag row">Correct row found</span></td><td></td></tr>
+            <tr><td class="num-cell">25</td><td>Customer</td><td>"Best Buy Corp"</td><td>Best-Buy Corp</td><td><span class="tag row">Correct row found</span></td><td></td></tr>
+            <tr><td class="num-cell">26</td><td>Supplier</td><td>"E Commerce Partners"</td><td>E-Commerce Partners</td><td><span class="tag row">Correct row found</span></td><td></td></tr>
+            <tr><td class="num-cell">27</td><td>Promotion</td><td>"Back To School"</td><td>Back-to-School Sale</td><td><span class="tag row">Correct row found</span></td><td></td></tr>
+            <tr><td class="num-cell">28</td><td>Store</td><td>"Down Town Plaza"</td><td>Downtown Plaza</td><td><span class="tag row">Correct row found</span></td><td></td></tr>
+
+            <tr class="group-head"><td colspan="6">E · Identifiers / codes</td></tr>
+            <tr><td class="num-cell">29</td><td>Invoice</td><td>"Invoice 12345"</td><td>invoice_number = 12345</td><td><span class="tag row">Correct row found</span></td><td></td></tr>
+            <tr><td class="num-cell">30</td><td>Invoice</td><td>"Invoice #12345"</td><td>invoice_number = 12345</td><td><span class="tag row">Correct row found</span></td><td>Punctuation-tolerant, still a single exact row</td></tr>
+            <tr><td class="num-cell">31</td><td>Purchase Order</td><td>"PO-10432"</td><td>po_number = PO-10432</td><td><span class="tag row">Correct row found</span></td><td></td></tr>
+            <tr><td class="num-cell">32</td><td>Product</td><td>"SKU 774521"</td><td>sku = 774521</td><td><span class="tag row">Correct row found</span></td><td></td></tr>
+            <tr><td class="num-cell">33</td><td>Promotion</td><td>"Promo code SUMMER25"</td><td>promo_code = SUMMER25</td><td><span class="tag row">Correct row found</span></td><td></td></tr>
+            <tr><td class="num-cell">34</td><td>Customer</td><td>"Customer ID 88213"</td><td>customer_id = 88213</td><td><span class="tag row">Correct row found</span></td><td></td></tr>
+            <tr><td class="num-cell">35</td><td>Store</td><td>"Store #114"</td><td>store_number = 114</td><td><span class="tag row">Correct row found</span></td><td></td></tr>
+            <tr><td class="num-cell">36</td><td>Warehouse</td><td>"WH-EAST-02"</td><td>warehouse_code = WH-EAST-02</td><td><span class="tag row">Correct row found</span></td><td></td></tr>
+
+            <tr class="group-head"><td colspan="6">F · Exact names given correctly (baseline — must not regress)</td></tr>
+            <tr><td class="num-cell">37</td><td>Product</td><td>"Women's Gold Bangle Set"</td><td>Women's Gold Bangle Set</td><td><span class="tag row">Correct row found</span></td><td>Regardless of which strategy is used internally</td></tr>
+            <tr><td class="num-cell">38</td><td>Supplier</td><td>"Pacific Rim Accessories"</td><td>Pacific Rim Accessories</td><td><span class="tag row">Correct row found</span></td><td></td></tr>
+            <tr><td class="num-cell">39</td><td>Warehouse</td><td>"Eastern Distribution Center"</td><td>Eastern Distribution Center</td><td><span class="tag row">Correct row found</span></td><td></td></tr>
+            <tr><td class="num-cell">40</td><td>Customer</td><td>"Acme Corp Holdings"</td><td>Acme Corp Holdings</td><td><span class="tag row">Correct row found</span></td><td></td></tr>
+            <tr><td class="num-cell">41</td><td>Warehouse</td><td>"Northeast Hub"</td><td>Northeast Hub</td><td><span class="tag row">Correct row found</span></td><td></td></tr>
+            <tr><td class="num-cell">42</td><td>Promotion</td><td>"Holiday Bundle Discount"</td><td>Holiday Bundle Discount</td><td><span class="tag row">Correct row found</span></td><td></td></tr>
+
+            <tr class="group-head"><td colspan="6">G · Multiple business references in one question</td></tr>
+            <tr><td class="num-cell">43</td><td>Supplier + Product</td><td>"purchase orders from Lakeside Textiles for the Women's Gold Bangle Set"</td><td>two independent references</td><td><span class="tag row">Correct rows found</span> (each)</td><td>Both resolved independently, same principles apply to each</td></tr>
+            <tr><td class="num-cell">44</td><td>Customer + Warehouse</td><td>"invoices does Acme Corp Holdings have from the Eastern Distribution Center"</td><td>two independent references</td><td><span class="tag row">Correct rows found</span> (each)</td><td></td></tr>
+            <tr><td class="num-cell">45</td><td>Product + Store + Promotion</td><td>"how many bangles did the Downtown Flagship Store sell during the Holiday Bundle Discount"</td><td>three independent references</td><td><span class="tag row">Correct rows found</span> (each)</td><td>Three-reference stress case</td></tr>
+            <tr><td class="num-cell">46</td><td>Product + Supplier</td><td>"orders for parkas from Pacific Rim Accessories"</td><td>two independent references</td><td><span class="tag row">Correct rows found</span> (each)</td><td></td></tr>
+            <tr><td class="num-cell">47</td><td>Invoice + Customer</td><td>"Invoice 12345 for Smith's Auto Group"</td><td>identifier + free text, mixed</td><td><span class="tag row">Correct rows found</span> (each)</td><td>Confirms strategy is chosen per-reference, not per-question</td></tr>
+            <tr><td class="num-cell">48</td><td>Purchase Order + Warehouse</td><td>"PO-10432 shipped to Northeast Hub"</td><td>identifier + free text, mixed</td><td><span class="tag row">Correct rows found</span> (each)</td><td></td></tr>
+            <tr><td class="num-cell">49</td><td>Product + two Stores</td><td>"compare bangle sales at Downtown Flagship Store versus 7-Eleven Downtown"</td><td>three independent references</td><td><span class="tag row">Correct rows found</span> (each)</td><td></td></tr>
+            <tr><td class="num-cell">50</td><td>Product + Warehouse</td><td>"which suppliers shipped scarves to Eastern Distribution Center in Q3"</td><td>two independent references</td><td><span class="tag row">Correct rows found</span> (each)</td><td></td></tr>
+
+            <tr class="group-head"><td colspan="6">H · Known gaps — deliberately out of scope for this specification</td></tr>
+            <tr><td class="num-cell">51</td><td>Product</td><td>"Coke" for a product actually stored as "Cola Classic 12pk"</td><td>unrelated spelling</td><td><span class="tag gap">Out of scope</span></td><td>Synonym unknown to the database — no matching strategy recovers this</td></tr>
+            <tr><td class="num-cell">52</td><td>Product</td><td>"Wemens Gold Bangle" (typo)</td><td>Women's Gold Bangle Set</td><td><span class="tag gap">Out of scope</span></td><td>Misspelling — breaks substring matching outright</td></tr>
+            <tr><td class="num-cell">53</td><td>Customer</td><td>"the flagship account" (never-stored nickname)</td><td>unknown</td><td><span class="tag gap">Out of scope</span></td><td>Alias not derivable from the reference text</td></tr>
+            <tr><td class="num-cell">54</td><td>Product</td><td>"jacket" (loosely matches two dissimilar real products)</td><td>Women's Casual Zip Jacket / Men's Cable Knit Zip Cardigan</td><td><span class="tag gap">Out of scope</span></td><td>Genuine ambiguity between dissimilar plausible matches — needs a decision, not better SQL</td></tr>
+            <tr><td class="num-cell">55</td><td>Supplier</td><td>"corp" (matches many unrelated suppliers)</td><td>many rows</td><td><span class="tag gap">Out of scope</span></td><td>Correct SQL, but the result is not a single confident answer, and no Planner-level decision resolves that</td></tr>
+            <tr><td class="num-cell">56</td><td>Store</td><td>"the store" (no distinguishing content)</td><td>unknown</td><td><span class="tag gap">Out of scope</span></td><td>Correctly unresolvable — not a defect if it stays unresolved</td></tr>
+            <tr><td class="num-cell">57</td><td>Invoice</td><td>"that invoice" (pronoun reference)</td><td>depends on conversation</td><td><span class="tag gap">Out of scope</span></td><td>Requires conversation continuity, not literal matching</td></tr>
+            <tr><td class="num-cell">58</td><td>Promotion</td><td>"the discount from last time"</td><td>depends on conversation</td><td><span class="tag gap">Out of scope</span></td><td>Same — a different capability entirely, not this specification's concern</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="validation">
+      <div class="num">§4</div>
+      <h2>Validation plan</h2>
+      <ol>
+        <li><strong>Baseline first.</strong> Run all 58 scenarios against the Planner exactly as it exists today, before any prompt change, and record the actual generated SQL and business outcome for each. This is the control — without it, "the prompt fixed it" can't be distinguished from "it happened to already work."</li>
+        <li><strong>Agree the reasoning contract.</strong> This document, §1, is that agreement — reviewed and settled before any prompt wording changes.</li>
+        <li><strong>Apply the principles to the Planner prompt.</strong> Out of scope for this document, per your instruction — happens only after step 2 is agreed.</li>
+        <li><strong>Re-run all 58 scenarios.</strong> Groups A–G (50 scenarios) are the actual bar: every one should now produce the correct business outcome — the right row, the right set, or, for scenario 5, a correctly returned multi-row set — regardless of which SQL mechanism the Planner used to get there. Group H (8 scenarios) is expected to still show the same unresolved outcome as baseline — if any Group H scenario starts passing, that's worth understanding on its own, not assuming as a bonus win; if any Group A–G scenario still fails, that's a real gap in the reasoning contract, not evidence the contract is insufficient in principle.</li>
+        <li><strong>Only after that comparison is complete</strong>, evaluate whether anything remaining in Group H — and only Group H — justifies new architecture, per the boundary already established.</li>
+      </ol>
+    </section>
+
+    <section id="consistency">
+      <div class="num">§5</div>
+      <h2>Final consistency review</h2>
+      <p class="lede">Re-verified against this revision, not carried forward by assumption.</p>
+      <ul class="revlist" style="list-style:none;padding:0;">
+        <li><strong>Reasoning moved out of the Planner?</strong> No — every principle, including the three boundary clarifications, is content for the Planner's own prompt. Nothing added in this revision introduces a decision-maker elsewhere.</li>
+        <li><strong>Runtime decisions introduced?</strong> No — Runtime is not mentioned; the outcome-based regression grading (§3) changes what is measured, not what Runtime does with the SQL it receives.</li>
+        <li><strong>Agent Brain changes required?</strong> No — RESOLUTIONS and LITERAL CANDIDATES remain referenced only as existing, unmodified inputs.</li>
+        <li><strong>Metadata evolution required?</strong> No — the Limitations section makes explicit that this specification does not close the gap requiring a metadata-backed capability; it does not introduce one either.</li>
+        <li><strong>ExecutionContract changes required?</strong> No — not implicated by anything added or changed in this revision.</li>
+        <li><strong>ReasoningEngine changes required?</strong> No — loop control, evidence handling, and evaluator behavior are not referenced.</li>
+      </ul>
+      <p>Clean on all six after revision, on the same basis as before: everything added in this pass — the Non-Goals section, the relocated Limitations, the three boundary clarifications, and the outcome-based grading — is a refinement of what the Planner's own prompt should say, not a new touchpoint anywhere else in the architecture.</p>
+    </section>
+
+    <footer>
+      Baseline: the Planner reasoning boundary established in the preceding investigation (reasoning-solvable vs. capability-requiring), refined by the architecture review that produced this revision. This specification does not modify Agent Brain, the Evaluator, Runtime, or any metadata model — it is scoped entirely to the Planner's own reasoning about textual business references.
+    </footer>
+  </main>
+</div>
+
+</body>
+</html>

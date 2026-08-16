@@ -1,0 +1,498 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ADR — Enterprise Business Reference Resolution</title>
+<style>
+  :root{
+    --ink-900:#14171a; --ink-700:#3a4045; --ink-muted:#5b625d;
+    --paper-0:#f4f5f3; --paper-1:#ffffff; --line:#d8dad6; --line-soft:#e6e7e4;
+    --semantic:#9c6a0f; --semantic-bg:#f6ecd8; --semantic-ink:#7a5309;
+    --deterministic:#1f6f74; --deterministic-bg:#dcecec; --deterministic-ink:#155559;
+    --danger:#9a3324; --danger-bg:#f6e3de;
+    --font-display:-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;
+    --font-body:-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;
+    --font-mono:ui-monospace,"SF Mono","Cascadia Code","Roboto Mono",Menlo,Consolas,monospace;
+    --measure:70ch;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --ink-900:#e9e8e3; --ink-700:#c7c9c4; --ink-muted:#9aa19c;
+      --paper-0:#14171a; --paper-1:#1a1e20; --line:#2c3234; --line-soft:#23282a;
+      --semantic:#d9a94b; --semantic-bg:#3a2f16; --semantic-ink:#e8c073;
+      --deterministic:#4fa8ac; --deterministic-bg:#123638; --deterministic-ink:#7cc9cc;
+      --danger:#d9776a; --danger-bg:#3a201c;
+    }
+  }
+  :root[data-theme="dark"]{
+    --ink-900:#e9e8e3; --ink-700:#c7c9c4; --ink-muted:#9aa19c;
+    --paper-0:#14171a; --paper-1:#1a1e20; --line:#2c3234; --line-soft:#23282a;
+    --semantic:#d9a94b; --semantic-bg:#3a2f16; --semantic-ink:#e8c073;
+    --deterministic:#4fa8ac; --deterministic-bg:#123638; --deterministic-ink:#7cc9cc;
+    --danger:#d9776a; --danger-bg:#3a201c;
+  }
+  :root[data-theme="light"]{
+    --ink-900:#14171a; --ink-700:#3a4045; --ink-muted:#5b625d;
+    --paper-0:#f4f5f3; --paper-1:#ffffff; --line:#d8dad6; --line-soft:#e6e7e4;
+    --semantic:#9c6a0f; --semantic-bg:#f6ecd8; --semantic-ink:#7a5309;
+    --deterministic:#1f6f74; --deterministic-bg:#dcecec; --deterministic-ink:#155559;
+    --danger:#9a3324; --danger-bg:#f6e3de;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;background:var(--paper-0);color:var(--ink-900);}
+  body{font-family:var(--font-body);font-size:16px;line-height:1.6;}
+  ::selection{background:var(--semantic-bg);color:var(--ink-900);}
+
+  a{color:var(--deterministic-ink);}
+  a:focus-visible, button:focus-visible, summary:focus-visible{outline:2px solid var(--deterministic);outline-offset:2px;}
+
+  .shell{display:grid;grid-template-columns:230px minmax(0,var(--measure));gap:56px;max-width:1180px;margin:0 auto;padding:48px 24px 120px;}
+  @media (max-width:920px){.shell{grid-template-columns:1fr;}.rail{display:none;}}
+
+  /* ── Rail ───────────────────────────────────────────────────────── */
+  .rail{position:sticky;top:32px;align-self:start;font-size:12.5px;}
+  .rail .kicker{font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.08em;color:var(--ink-muted);font-size:10.5px;margin-bottom:14px;}
+  .rail ol{list-style:none;margin:0 0 26px;padding:0;display:flex;flex-direction:column;gap:2px;}
+  .rail li a{display:block;padding:5px 8px;border-radius:3px;color:var(--ink-700);text-decoration:none;border-left:2px solid transparent;}
+  .rail li a:hover{background:var(--paper-1);border-left-color:var(--line);}
+  .rail .legend{display:flex;flex-direction:column;gap:8px;padding-top:16px;border-top:1px solid var(--line);}
+  .swatch{display:flex;align-items:center;gap:8px;color:var(--ink-muted);}
+  .swatch i{width:11px;height:11px;border-radius:2px;flex:none;}
+  .swatch.sem i{background:var(--semantic);}
+  .swatch.det i{background:var(--deterministic);}
+
+  /* ── Doc chrome ─────────────────────────────────────────────────── */
+  header.doc-head{margin-bottom:44px;}
+  .doc-eyebrow{font-family:var(--font-mono);font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-muted);display:flex;gap:10px;align-items:center;margin-bottom:14px;}
+  .status-pill{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.04em;padding:2px 8px;border-radius:20px;border:1px solid var(--deterministic);color:var(--deterministic-ink);background:var(--deterministic-bg);}
+  h1{font-family:var(--font-display);font-size:2.05rem;font-weight:700;letter-spacing:-.015em;line-height:1.14;margin:0 0 12px;text-wrap:balance;}
+  .doc-sub{color:var(--ink-muted);font-size:1.02rem;max-width:60ch;text-wrap:balance;}
+
+  section{margin-top:64px;padding-top:8px;scroll-margin-top:24px;}
+  section > .num{font-family:var(--font-mono);color:var(--ink-muted);font-size:12.5px;}
+  h2{font-family:var(--font-display);font-size:1.36rem;font-weight:700;letter-spacing:-.01em;margin:2px 0 6px;text-wrap:balance;}
+  h3{font-family:var(--font-display);font-size:1.02rem;font-weight:700;margin:28px 0 8px;}
+  p{margin:0 0 14px;color:var(--ink-700);}
+  strong{color:var(--ink-900);}
+  .lede{color:var(--ink-muted);font-size:.97rem;margin-bottom:22px;}
+
+  code{font-family:var(--font-mono);font-size:.86em;background:var(--paper-1);border:1px solid var(--line-soft);padding:.1em .38em;border-radius:4px;color:var(--ink-900);}
+  pre{overflow-x:auto;}
+
+  ul,ol{padding-left:1.3em;color:var(--ink-700);}
+  li{margin-bottom:6px;}
+
+  .tag{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.03em;padding:1px 7px;border-radius:20px;white-space:nowrap;}
+  .tag.sem{background:var(--semantic-bg);color:var(--semantic-ink);border:1px solid var(--semantic);}
+  .tag.det{background:var(--deterministic-bg);color:var(--deterministic-ink);border:1px solid var(--deterministic);}
+  .tag.no{background:var(--danger-bg);color:var(--danger);border:1px solid var(--danger);}
+
+  /* ── Cards / callouts ───────────────────────────────────────────── */
+  .card{background:var(--paper-1);border:1px solid var(--line);border-radius:8px;padding:18px 20px;margin:18px 0;}
+  .card.baseline{border-left:3px solid var(--ink-muted);}
+  .card.decision{border-left:3px solid var(--deterministic);}
+  .card h4{margin:0 0 8px;font-family:var(--font-display);font-size:.92rem;}
+
+  /* ── Tables ─────────────────────────────────────────────────────── */
+  .table-wrap{overflow-x:auto;margin:16px 0 22px;border:1px solid var(--line);border-radius:8px;}
+  table{border-collapse:collapse;width:100%;font-size:.87rem;min-width:560px;}
+  th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line-soft);vertical-align:top;}
+  thead th{background:var(--paper-1);font-family:var(--font-mono);font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-muted);border-bottom:1px solid var(--line);}
+  tbody tr:last-child td{border-bottom:none;}
+  td code{white-space:nowrap;}
+  .fit{font-variant-numeric:tabular-nums;}
+
+  /* ── Mermaid frame ──────────────────────────────────────────────── */
+  .diagram{background:var(--paper-1);border:1px solid var(--line);border-radius:8px;padding:18px;margin:18px 0;overflow-x:auto;}
+  .diagram .cap{font-family:var(--font-mono);font-size:11px;color:var(--ink-muted);margin-top:10px;padding-top:10px;border-top:1px dashed var(--line-soft);}
+  .mermaid{display:flex;justify-content:center;}
+
+  /* ── Worked examples ────────────────────────────────────────────── */
+  .example{border:1px solid var(--line);border-radius:8px;background:var(--paper-1);margin:14px 0;overflow:hidden;}
+  .example summary{cursor:pointer;list-style:none;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;font-weight:600;font-size:.93rem;}
+  .example summary::-webkit-details-marker{display:none;}
+  .example summary .plus{color:var(--ink-muted);font-weight:400;}
+  .example[open] summary .plus{transform:rotate(45deg);}
+  .example .body{padding:0 16px 16px;font-size:.88rem;}
+  .example dl{display:grid;grid-template-columns:130px 1fr;gap:6px 14px;margin:10px 0;}
+  .example dt{color:var(--ink-muted);font-family:var(--font-mono);font-size:.78rem;}
+  .example dd{margin:0;}
+
+  footer{margin-top:80px;padding-top:22px;border-top:1px solid var(--line);color:var(--ink-muted);font-size:.83rem;}
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <nav class="rail">
+    <div class="kicker">Contents</div>
+    <ol>
+      <li><a href="#adr">0 · ADR summary</a></li>
+      <li><a href="#capability">1 · The capability</a></li>
+      <li><a href="#pipeline">2 · Pipeline position</a></li>
+      <li><a href="#metadata">3 · Metadata evolution</a></li>
+      <li><a href="#contract">4 · Retrieval contract</a></li>
+      <li><a href="#agentbrain">5 · Agent Brain cases</a></li>
+      <li><a href="#continuity">6 · Conversation continuity</a></li>
+      <li><a href="#transparency">7 · Transparency</a></li>
+      <li><a href="#examples">8 · Worked examples</a></li>
+      <li><a href="#validation">9 · Validation</a></li>
+      <li><a href="#matrix">Ownership matrix</a></li>
+    </ol>
+    <div class="legend">
+      <div class="swatch sem"><i></i>Semantic reasoning — Agent Brain</div>
+      <div class="swatch det"><i></i>Deterministic — Runtime / Planner mechanics</div>
+    </div>
+  </nav>
+
+  <main>
+    <header class="doc-head">
+      <div class="doc-eyebrow"><span class="status-pill">Proposed</span> ADR · Enterprise Capability · No code, no migrations, no APIs</div>
+      <h1>Enterprise Business Reference Resolution</h1>
+      <p class="doc-sub">How Zevra resolves a user's free-text reference to a specific enterprise entity — a product, supplier, store, warehouse, customer, employee, purchase order, invoice, or promotion — to its canonical row before planning begins, as a natural extension of the existing semantic grounding pipeline.</p>
+    </header>
+
+    <section id="adr">
+      <div class="num">§0</div>
+      <h2>ADR summary</h2>
+      <div class="card decision">
+        <h4>Decision</h4>
+        <p style="margin:0">Business Reference Resolution becomes a new step <em>inside</em> <code>AgentBrain.resolve()</code>, positioned immediately after its existing <code>BusinessLanguageResolver.resolve()</code> call. It uses one new, generic, retrieval-only contract — modeled on the existing, already-proven separation in <code>EntityCandidateService</code> — to fetch bounded candidates from an entity's canonical source. No new pipeline stage is visible to <code>ChatService</code>, the router, the planner, or the runtime.</p>
+      </div>
+      <table style="margin-top:10px">
+        <tbody>
+          <tr><td style="width:130px;color:var(--ink-muted);font-family:var(--font-mono);font-size:.78rem">Context</td><td>Free-text references ("Women Gold Bangle Set") fail to match canonical row values ("Women's Gold Bangle Set") because no component today attempts row-level identity resolution before SQL is planned — proven in the prior investigation.</td></tr>
+          <tr><td style="color:var(--ink-muted);font-family:var(--font-mono);font-size:.78rem">Scope</td><td>Every enterprise entity type, every tenant, every domain — not a product feature.</td></tr>
+          <tr><td style="color:var(--ink-muted);font-family:var(--font-mono);font-size:.78rem">Non-goals</td><td>No fuzzy SQL, embeddings, or vector search. No new runtime layer. No second semantic pipeline. No new conversation-state model.</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="capability">
+      <div class="num">§1</div>
+      <h2>Define the capability</h2>
+      <p class="lede">One new concept, placed precisely against the three that already exist.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Grounding kind</th><th>What it answers</th><th>Cardinality</th><th>Owner today</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Business Object / Attribute</strong></td><td>What does "Product" <em>mean</em>, structurally?</td><td>One per concept, tenant-wide</td><td><span class="tag sem">Agent Brain</span></td></tr>
+            <tr><td><strong>Enumerated Value Domain</strong></td><td>What are the legal values of a coded column?</td><td>Small, closed, enum-sourced</td><td><span class="tag sem">Agent Brain</span> via BLR</td></tr>
+            <tr><td><strong>Business Reference <span class="tag sem" style="margin-left:6px">new</span></strong></td><td>Which specific row does the user mean?</td><td>Open, row-level, unbounded</td><td>Unowned today</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p><strong>Business Reference Resolution</strong> is the act of mapping a user-supplied surface string that names one <em>instance</em> of a Business Object — not the concept "Product," but the specific row "Women's Gold Bangle Set" — to its canonical enterprise value, before that value is allowed to become a SQL literal. It sits one level below Enumerated Value Domains on the same axis (both ground a literal against a persisted, authoritative set of values) and one level above them in cardinality: a value domain is closed and small by construction (an ENUM); a business reference is open and large (a product catalog, a supplier list, an employee roster).</p>
+
+      <p>It is not a new grounding <em>category</em> so much as the missing rung on a ladder that already has two rungs: object-level meaning, then attribute-level legal values. Business Reference Resolution is instance-level identity — the same ladder, one rung further down, toward the data.</p>
+    </section>
+
+    <section id="pipeline">
+      <div class="num">§2</div>
+      <h2>Position in the pipeline</h2>
+      <p class="lede">One interaction added inside an existing call. Nothing added around it.</p>
+
+      <div class="diagram">
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#f6ecd8','primaryBorderColor':'#9c6a0f','primaryTextColor':'#14171a','lineColor':'#5b625d','secondaryColor':'#dcecec','tertiaryColor':'#ffffff','fontFamily':'ui-sans-serif'}}}%%
+sequenceDiagram
+    participant U as User
+    participant CS as ChatService
+    participant AB as Agent Brain
+    participant BLR as BusinessLanguageResolver
+    participant BRR as Reference Retrieval<br/>(new, inside Agent Brain)
+    participant ECB as ExecutionContractBuilder
+    participant PL as Planner
+    participant GR as Governed Runtime
+
+    U->>CS: "Inventory for Women Gold Bangle Set"
+    CS->>AB: resolve(question, domains)
+    AB->>BLR: resolve(question, domainKeys)
+    BLR-->>AB: ResolvedQuestion (unresolved: "Women Gold Bangle Set")
+    Note over AB,BRR: NEW interaction — same call boundary,<br/>no new pipeline stage
+    AB->>BRR: candidates(entityType, canonicalSource,<br/>identityAttr, displayAttr, userReference)
+    BRR-->>AB: bounded candidate list (retrieve only)
+    Note over AB: Agent Brain judges the list (Cases A/B/C, §5)
+    AB-->>CS: ResolvedBusinessModel (reference resolved)
+    CS->>ECB: compile(model)
+    ECB-->>CS: ExecutionContract (unchanged shape)
+    CS->>PL: nextStep(question, schemaCtx, evidence)
+    PL-->>CS: SQL naming the canonical value
+    CS->>GR: execute(governed SQL)
+    GR-->>CS: rows
+        </pre>
+        <div class="cap">Sequence — every participant already exists except the retrieval call itself, which is a method Agent Brain invokes, not a new service in the request path.</div>
+      </div>
+
+      <p>This is a straight line extension of the sequence already validated in the prior investigation. The only new arrow is <code>AgentBrain → Reference Retrieval</code>, drawn exactly where <code>AgentBrain → BusinessLanguageResolver</code> already is. Everything downstream — <code>ExecutionContractBuilder</code>, <code>PromptContextBuilder</code>, <code>ReasoningPlanner</code>, <code>GovernedSqlRuntime</code> — receives an already-resolved model and is unaware anything changed.</p>
+    </section>
+
+    <section id="metadata">
+      <div class="num">§3</div>
+      <h2>Metadata evolution</h2>
+      <p class="lede">Every concept needed already has a slot. None require a second metadata model.</p>
+
+      <div class="diagram">
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#dcecec','primaryBorderColor':'#1f6f74','primaryTextColor':'#14171a','lineColor':'#5b625d','fontFamily':'ui-sans-serif'}}}%%
+graph LR
+    subgraph BE["BusinessEntity — existing record"]
+      ET["entity_type<br/><span style='font-size:11px'>restored field — existed in V001,<br/>dropped in V006 rebuild</span>"]
+      PK["primaryObjectKey<br/><span style='font-size:11px'>already exists — the Canonical Source</span>"]
+    end
+    subgraph BO["BusinessObject → BusinessAttribute — existing model"]
+      ID["AttributeRole.IDENTIFIER<br/><span style='font-size:11px'>already exists — Identity Attribute</span>"]
+      AT["AttributeRole.ATTRIBUTE<br/><span style='font-size:11px'>already exists — candidate Display Attribute</span>"]
+    end
+    ET -. "names the concept<br/>e.g. Supplier" .-> PK
+    PK -- "binds to one table" --> BO
+    BO --> ID
+    BO --> AT
+        </pre>
+        <div class="cap">Every box already exists in the codebase today; only <code>entity_type</code> requires restoring a field the schema once had.</div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Task 3 concept</th><th>Existing home</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>Entity Type</td><td><code>BusinessEntity.entityType</code></td><td>Restore a field present in the original schema, removed in a later rebuild</td></tr>
+            <tr><td>Canonical Source</td><td><code>BusinessEntity.primaryObjectKey</code></td><td>Already live — one authoritative table per entity concept</td></tr>
+            <tr><td>Identity Attribute</td><td><code>AttributeRole.IDENTIFIER</code></td><td>Already live — "a key or join field"</td></tr>
+            <tr><td>Display Attribute</td><td><code>AttributeRole.ATTRIBUTE</code></td><td>Already live — "a descriptive field... a name"; resolution needs the object to indicate <em>which one</em> of possibly several ATTRIBUTE-role columns is <em>the</em> display value, the same way it already indicates one <code>primaryObjectKey</code> among possibly several bound objects</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p><code>AttributeRole</code>'s own documented extension path — "orthogonal traits... arrive in later phases as optional facets, never as new roles" — is precisely the mechanism this needs: Business Reference Resolution is exactly such a facet, layered on top of the existing closed taxonomy, not a competing one.</p>
+    </section>
+
+    <section id="contract">
+      <div class="num">§4</div>
+      <h2>Candidate retrieval contract</h2>
+      <p class="lede">Generic in, generic out — mirrors <code>EntityCandidateService</code>'s existing "retrieves and renders; never decides" contract, one level down (row values, not entity concepts).</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Input (generic)</th><th>Meaning</th><th>Example for this entity</th></tr></thead>
+          <tbody>
+            <tr><td class="fit">Entity Type</td><td>Which registered business concept is in play</td><td><code>Product</code></td></tr>
+            <tr><td class="fit">Canonical Source</td><td>The one authoritative table for that concept</td><td><code>retail_core.products</code></td></tr>
+            <tr><td class="fit">Identity Attribute</td><td>The column that uniquely identifies a row</td><td><code>products.id</code></td></tr>
+            <tr><td class="fit">Display Attribute</td><td>The column a human recognizes the row by</td><td><code>products.name</code></td></tr>
+            <tr><td class="fit">User Reference</td><td>The surface string from the question</td><td><code>"Women Gold Bangle Set"</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Output (generic)</th><th>Meaning</th><th>Explicitly excluded</th></tr></thead>
+          <tbody>
+            <tr><td class="fit">Candidate list</td><td>Bounded set of {identity value, display value} pairs</td><td>No ranking score, no "best match" flag, no free-text explanation</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>The contract never names Products, Suppliers, or Stores — it is parameterized entirely by the four metadata fields in §3 plus the raw reference string. The same contract shape serves every entity type in every tenant because nothing about it is retail-shaped; it is shaped by <code>BusinessEntity</code> + <code>AttributeRole</code>, which already are.</p>
+
+      <p><strong>What it must never do</strong>, stated as plainly as the existing precedent states it: rank candidates, choose among them, or infer a match. Those are Agent Brain's job (§5) — exactly the same separation <code>EntityCandidateService</code>'s own Javadoc already draws between its retrieval and "the reuse-vs-create judgment [that] stays with the AI."</p>
+    </section>
+
+    <section id="agentbrain">
+      <div class="num">§5</div>
+      <h2>Agent Brain: three cases</h2>
+      <p class="lede">Agent Brain consumes the candidate list. It never retrieves; retrieval never judges.</p>
+
+      <h3>Case A — one obvious candidate</h3>
+      <p>Exactly one candidate, or one candidate whose display value normalizes (via the same deterministic normalization <code>BusinessLanguageResolver</code> already applies — lowercase, separator-insensitive, singular/plural) to an exact match against the user reference. Agent Brain accepts it and continues resolving — no different in kind from how it already accepts a single first-match-wins <code>BusinessLanguageResolver</code> resolution today. Investigation proceeds automatically; nothing downstream is aware a reference needed resolving at all.</p>
+
+      <h3>Case B — several plausible candidates</h3>
+      <p>Reuses the existing <code>ASK_CLARIFICATION</code> path rather than inventing a second one. The precedent already exists in <code>ExecutionContract.isEmpty()</code> — "True when no business object resolved — the agent may execute nothing" — a pre-planning short-circuit check ChatService already performs on Agent Brain's output before planning starts. An ambiguous reference is the same shape of check: Agent Brain's resolution result carries the candidate set; ChatService's existing branch (the same one that renders a router-originated clarification question today) renders it identically. The only change is <em>where the clarification originates</em> — from Agent Brain's resolution outcome as well as from the router's upfront classification — never a new rendering path, a new decision type surfaced to the user, or a second clarification subsystem.</p>
+
+      <div class="diagram">
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#f6ecd8','primaryBorderColor':'#9c6a0f','primaryTextColor':'#14171a','lineColor':'#5b625d','fontFamily':'ui-sans-serif'}}}%%
+sequenceDiagram
+    participant U as User
+    participant CS as ChatService
+    participant AB as Agent Brain
+    participant BRR as Reference Retrieval
+
+    U->>CS: "Show me Wal Mart's orders"
+    CS->>AB: resolve(question, domains)
+    AB->>BRR: candidates(Entity Type=Supplier, User Reference="Wal Mart")
+    BRR-->>AB: ["Wal-Mart Inc.", "Walmart Distribution LLC"]
+    Note over AB: Two plausible, neither dominant —<br/>same terminal-outcome pattern as<br/>ExecutionContract.isEmpty()
+    AB-->>CS: resolution outcome = NEEDS_CLARIFICATION (candidates attached)
+    Note over CS: Existing ASK_CLARIFICATION rendering path —<br/>no new decision type, no new UI
+    CS-->>U: "I found multiple suppliers matching 'Wal Mart' — which one?"
+        </pre>
+        <div class="cap">Clarification sequence — reuses the existing terminal-outcome and rendering path; only the trigger point moves earlier, into Agent Brain's own resolution.</div>
+      </div>
+
+      <h3>Case C — no candidates</h3>
+      <p>Zero candidates returned. Agent Brain does not invent a literal — it records, in the same reasoning trace it already produces, that no canonical match was found, and the resolution proceeds exactly as it does today for any other unresolved term: the user's original phrasing reaches the planner unchanged, annotate-never-substitute, with the honest absence of a resolution visible in the trace rather than silently masked. This mirrors the existing "zero-cost fallback" principle already documented on <code>ResolvedQuestion</code> — an empty resolution behaves byte-identically to no resolution attempt at all, it does not fail closed.</p>
+    </section>
+
+    <section id="continuity">
+      <div class="num">§6</div>
+      <h2>Conversation continuity</h2>
+      <p class="lede">"When did we last reorder it?" needs no new state — the carried-forward evidence mechanism already ships this.</p>
+      <p>A resolved canonical entity does not need its own conversation-state concept. The turn that resolves "Women Gold Bangle Set" → "Women's Gold Bangle Set" already produces query rows that get persisted as this turn's <code>ExecutionReference</code> — the same durable, per-turn record the existing follow-up mechanism already seeds the next turn's evidence from. A follow-up referring to "it" arrives with that prior turn's resolved entity and its retrieved data already present in the carried-forward evidence and conversation history text the planner already reads. Nothing about Business Reference Resolution requires a dedicated place to "remember" what was resolved — the conversation already remembers every turn's result, and a resolved reference is just one more fact inside that result.</p>
+    </section>
+
+    <section id="transparency">
+      <div class="num">§7</div>
+      <h2>Transparency</h2>
+      <p class="lede">The Business Understanding section already renders exactly this shape for every other resolution kind.</p>
+
+      <div class="diagram">
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#dcecec','primaryBorderColor':'#1f6f74','primaryTextColor':'#14171a','lineColor':'#5b625d','fontFamily':'ui-sans-serif'}}}%%
+sequenceDiagram
+    participant AB as Agent Brain
+    participant CS as ChatService
+    participant RT as reasoningSteps[]<br/>(existing array)
+    participant UI as BusinessUnderstanding.jsx<br/>(existing component)
+
+    AB-->>CS: resolution: surface="Women Gold Bangle Set",<br/>target="Women's Gold Bangle Set (table: retail_core.products)"
+    Note over CS,RT: Same shape already used for every<br/>ENTITY-kind resolution — entityTarget()<br/>formatting is reused unchanged
+    CS->>RT: append {type:'resolution', surface, target, tier}
+    RT->>UI: ChatResponse.reasoningSteps
+    UI-->>UI: renders unchanged — one more concept row
+        </pre>
+        <div class="cap">No new component. <code>entityTarget()</code>'s existing formatting — <code>"&lt;name&gt; (table: &lt;qualifiedTable&gt;)"</code> — already produces exactly the shape a Business Reference resolution needs.</div>
+      </div>
+
+      <div class="card">
+        <h4>Rendered example</h4>
+        <p style="margin:0 0 4px"><strong>Business Reference</strong></p>
+        <p style="margin:0 0 4px;color:var(--ink-muted)">User Reference — <code>Women Gold Bangle Set</code></p>
+        <p style="margin:0 0 4px;color:var(--ink-muted)">Resolved Enterprise Entity — <code>Women's Gold Bangle Set</code></p>
+        <p style="margin:0 0 4px;color:var(--ink-muted)">Confidence — <span class="tag det">High</span> (Case A, single normalized match)</p>
+        <p style="margin:0;color:var(--ink-muted)">Reason — closest canonical enterprise entity</p>
+      </div>
+
+      <p><strong>If clarification occurred:</strong> no new history mechanism is needed. The clarification question is one turn's <code>answer</code>; the user's disambiguating reply is the next turn's <code>question</code> — both already grouped under the same <code>conversation_id</code> the way every multi-turn exchange already is. The Business Understanding row for the eventually-resolved reference simply carries a tier/reason indicating it followed a clarification, rendered through the same <code>ConceptDetail</code> "why Zevra used this understanding" text that already exists for every other resolution tier.</p>
+    </section>
+
+    <section id="examples">
+      <div class="num">§8</div>
+      <h2>Worked examples</h2>
+      <p class="lede">Five references, five entity types, one architecture. Each trace follows §2's sequence exactly — only the four metadata inputs change.</p>
+
+      <details class="example">
+        <summary>Women Gold Bangle Set <span class="plus">＋</span></summary>
+        <div class="body">
+          <dl>
+            <dt>Entity Type</dt><dd>Product</dd>
+            <dt>Canonical Source</dt><dd><code>retail_core.products</code></dd>
+            <dt>Identity / Display</dt><dd><code>products.id</code> / <code>products.name</code></dd>
+            <dt>Outcome</dt><dd>Case A — single exact-normalized candidate, "Women's Gold Bangle Set." Resolves silently; investigation continues.</dd>
+          </dl>
+        </div>
+      </details>
+
+      <details class="example">
+        <summary>Wal Mart <span class="plus">＋</span></summary>
+        <div class="body">
+          <dl>
+            <dt>Entity Type</dt><dd>Supplier <em>or</em> Customer — the same reference string, disambiguated only by which Business Object the question's other terms already ranked highest (Agent Brain's existing relevance scoring, unchanged)</dd>
+            <dt>Canonical Source</dt><dd><code>retail_core.suppliers</code> (in this trace)</dd>
+            <dt>Outcome</dt><dd>Case B — "Wal-Mart Inc." and "Walmart Distribution LLC" both plausible. Clarification requested via the existing path (§5, §7).</dd>
+          </dl>
+        </div>
+      </details>
+
+      <details class="example">
+        <summary>Dallas Distribution Center <span class="plus">＋</span></summary>
+        <div class="body">
+          <dl>
+            <dt>Entity Type</dt><dd>Warehouse</dd>
+            <dt>Canonical Source</dt><dd><code>retail_core.warehouses</code></dd>
+            <dt>Identity / Display</dt><dd><code>warehouses.id</code> / <code>warehouses.name</code></dd>
+            <dt>Outcome</dt><dd>Case A — same shape as the Product example; only the four metadata inputs differ. No warehouse-specific handling anywhere.</dd>
+          </dl>
+        </div>
+      </details>
+
+      <details class="example">
+        <summary>Invoice #12345 <span class="plus">＋</span></summary>
+        <div class="body">
+          <dl>
+            <dt>Entity Type</dt><dd>Invoice</dd>
+            <dt>Canonical Source</dt><dd><code>finance.invoices</code></dd>
+            <dt>Identity Attribute (used directly)</dt><dd><code>invoices.invoice_number</code></dd>
+            <dt>Outcome</dt><dd>Distinct nuance, not a distinct architecture: the reference is already identity-shaped, not display-shaped — the existing <code>BusinessLanguageResolver</code> numeric-token exemption ("verbatim ground truth") already treats "12345" as user-supplied ground truth today. The same generic contract resolves it by Identity Attribute instead of Display Attribute — a different <em>input selection</em>, not a different <em>component</em>.</dd>
+          </dl>
+        </div>
+      </details>
+
+      <details class="example">
+        <summary>John Smith <span class="plus">＋</span></summary>
+        <div class="body">
+          <dl>
+            <dt>Entity Type</dt><dd>Customer <em>or</em> Employee</dd>
+            <dt>Canonical Source</dt><dd><code>hr.employees</code> (in this trace)</dd>
+            <dt>Outcome</dt><dd>Case B, and often the sharpest one — common names routinely return multiple genuine matches even within one entity type. Clarification via the identical existing path; no special-casing for "person-shaped" references anywhere in the design.</dd>
+          </dl>
+        </div>
+      </details>
+    </section>
+
+    <section id="validation">
+      <div class="num">§9</div>
+      <h2>Architecture validation</h2>
+      <p class="lede">Point-by-point proof, each tied to the mechanism that prevents the violation — not an assertion.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Constraint</th><th>Proof</th></tr></thead>
+          <tbody>
+            <tr><td>No duplicate reasoning</td><td>Resolution happens once, inside <code>AgentBrain.resolve()</code>, the same single call that already produces <code>ResolvedBusinessModel</code>. No second reasoning surface exists to duplicate.</td></tr>
+            <tr><td>No runtime business decisions</td><td>The retrieval contract's only output is a bounded candidate list (§4) — structurally incapable of expressing a decision, mirroring <code>EntityCandidateService</code>'s identical existing non-deciding shape.</td></tr>
+            <tr><td>No planner reasoning</td><td><code>ReasoningPlanner</code>'s prompt contract is untouched — it still only consumes a RESOLUTIONS line and copies a value, exactly as it does today for every other resolution kind.</td></tr>
+            <tr><td>No SQL semantic logic</td><td><code>LiteralValidator</code> and <code>SqlGovernancePipeline</code> are not touched by this design; resolution completes before any SQL is authored.</td></tr>
+            <tr><td>No tenant-specific behavior</td><td>The contract (§4) is parameterized entirely by <code>BusinessEntity</code>/<code>AttributeRole</code> fields every tenant's metadata already carries in its own shape — nothing in the design names a tenant, an industry, or a table.</td></tr>
+            <tr><td>No feature-specific code path</td><td>§8 traces five unrelated entity types through one unmodified sequence; none required a distinct branch.</td></tr>
+            <tr><td>Agent Brain sole owner of semantic reasoning</td><td>Every judgment call (Cases A/B/C, §5) is made inside Agent Brain; the retrieval component performs none.</td></tr>
+            <tr><td>ExecutionContract remains the governed boundary</td><td>§2's sequence shows resolution completing strictly before <code>ExecutionContractBuilder.compile()</code> — the contract's shape and role are unchanged.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="matrix">
+      <div class="num">Appendix</div>
+      <h2>Ownership matrix</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Component</th><th>Role in this capability</th></tr></thead>
+          <tbody>
+            <tr><td><span class="tag sem">Agent Brain</span></td><td>Invokes retrieval; judges Cases A/B/C; sole owner of the resolution decision</td></tr>
+            <tr><td>Reference Retrieval <em>(new call, inside Agent Brain)</em></td><td>Retrieves candidates only — never ranks, chooses, or infers</td></tr>
+            <tr><td><span class="tag sem">Business Language Resolver</span></td><td>Unchanged — still the first pass that leaves a term "unresolved," which triggers retrieval</td></tr>
+            <tr><td><span class="tag det">Metadata Retrieval</span></td><td>Unchanged — schema shape only; not extended into row content</td></tr>
+            <tr><td><span class="tag det">ExecutionContractBuilder</span></td><td>Unchanged — compiles from an already-resolved model, still no reasoning, still no repository access</td></tr>
+            <tr><td><span class="tag det">PromptContextBuilder</span></td><td>Unchanged — still a deterministic projection</td></tr>
+            <tr><td><span class="tag det">Planner</span></td><td>Unchanged — still consumes RESOLUTIONS, never derives them</td></tr>
+            <tr><td><span class="tag det">Governed Runtime / SQL Governance</span></td><td>Unchanged — untouched by this design entirely</td></tr>
+            <tr><td><span class="tag det">ChatService</span> (clarification rendering)</td><td>Unchanged rendering path; gains a second, earlier trigger source for the same existing outcome</td></tr>
+            <tr><td><span class="tag sem">BusinessUnderstanding.jsx</span></td><td>Unchanged — renders one more resolution row of a kind it already handles</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <footer>
+      Baseline: Enterprise Business Reference Resolution architecture investigation (prior session). This ADR designs against that baseline only — no code, migrations, or APIs are proposed here.
+    </footer>
+  </main>
+</div>
+
+</body>
+</html>
